@@ -1,0 +1,9 @@
+.metadata
+.project
+.classpath
+.settings
+*.class
+.tern-project
+*.pdf
+*.swf
+build/

@@ -1,0 +1,226 @@
+@CHARSET "ISO-8859-1";
+td {
+	font-family:'QuicksandBook', Arial, Helvetica, sans-serif;
+	font-size:0.8em;
+	text-color:"red";
+	
+}
+.btnHeader{
+	font-family:'QuicksandBook', Arial, Helvetica, sans-serif;
+	font-size:9pt;
+	color:white;
+	margin:10px;
+	
+}
+.innerbody{
+	 vertical-align:top;
+	 
+	margin:0px 20px 20px 20px;
+}
+.accept-button1 {
+	width:82px;background: transparent url('images/btnAccept.gif') no-repeat scroll 0 0;
+}
+.decline-button1 {
+	//width:82px;background: transparent url('images/btnDecline.gif') no-repeat scroll 0 0;
+}
+.insert-button1 {
+	width:82px;background: transparent url('images/btnSubmit.gif') no-repeat scroll 0 0;
+}
+.delete-button1{
+	width:82px;background: transparent url('images/btnDelete.gif') no-repeat scroll 0 0;
+}
+.del-button1{
+	width:92px;background: transparent url('images/btnDeleteS.gif') no-repeat scroll 0 0;
+}
+.submit-button1{
+	width:92px;background: transparent url('images/btnSubmit.gif') no-repeat scroll 0 0;
+}
+.cancel-button1{
+	width:82px;background: transparent url('images/btnCancel.gif') no-repeat scroll 0 0;
+}
+.add-button1{
+	width:82px;background: transparent url('images/btnAdd.gif') no-repeat scroll 0 0;
+}
+.select-button1{
+	width:82px;background: transparent url('images/btnSelect.gif') no-repeat scroll 0 0;
+}
+.edit-button1{
+	width:82px;background: transparent url('images/btnEdit.gif') no-repeat scroll 0 0;
+}
+.previous-button1{
+	width:132px;background: transparent url('images/btnPrevious.gif') no-repeat scroll 0 0;
+}
+.continue-button1{
+	width:85px;background: transparent url('images/btnContinue.gif') no-repeat scroll 0 0;
+}
+.details-button1{
+	width:82px;background: transparent url('images/details.gif') no-repeat scroll 0 0
+	
+}
+.modify-button1{
+	width:92px;background: transparent url('images/modify.gif') no-repeat scroll 0 0	
+}
+.button{
+	
+	height:22px;	 
+    width:80px;	
+}
+.button1{
+	
+	height:26px;	 
+    color: transparent; /* Fix for Firefox */
+    border-style: none;
+    border-width: 0;
+    padding: 0 0 0 16px !important; /* Fix for Internet Explorer */
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;	
+}
+table#chktbl{
+	background: url("images/imgCheck4.gif") no-repeat;
+}
+table#uppertbl { 
+ border:0px;
+ cellpadding:0;
+ cellspacing:0;
+ width:287px; 
+ height:100px;
+ font-size:1.2em;
+ } 
+table#lowertbl { 
+/*background: url("images/triangle3.gif") no-repeat;
+ */border:0px;
+ cellpadding:0;
+ cellspacing:0;
+ width:800px; 
+ height:100px;
+ font-size:1.2em;
+ } 
+ h3{
+text-align:left;
+ font-size:10pt;
+ }
+ h4{
+text-align:left;
+ font-size:10pt;
+ margin:0px;
+ border:0px;
+ }
+
+ h5{
+text-align:left;
+ font-size:8pt;
+ margin:0px;
+ border:0px;
+ }
+ 
+ h6{
+ text-align:center;
+ font-size:8pt;
+ margin:0px;
+ border:0px;
+ }
+.h6right{
+font-family:Arial, Helvetica, sans-serif;
+text-align:right;
+font-size:8pt;
+font-weight:bold;
+margin:0px;
+border:0px;
+}
+
+ .AccountFontTitle{
+font-family:Arial, Helvetica, sans-serif;
+font-size:13pt;
+font-weight:bold; 
+ }
+ .AccountFont{
+font-family:Arial, Helvetica, sans-serif;
+font-size:10pt;
+font-weight:bold; 
+ }
+ .HeaderFont
+ {
+ font-family:Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  color:#ffffff;
+ }
+ 
+ .text-color {
+	color: #0A70AB;
+}
+
+.special {
+	color: #AB830A;
+}
+
+.outset {
+	border-style: outset;
+}
+ a {
+ font-family: Quicksand, Arial;
+ font-weight:bold;
+ font-size:9pt;
+  color: #ffffff;
+ }
+ a:link {
+/*    color: #0094DE;
+  */  text-decoration: none;
+    
+
+}
+a:visited {
+        text-decoration: none;
+/*color: #0094DE;
+*/
+}
+a:hover {
+text-decoration: none;
+background-color:#d06200;
+
+}
+ 
+.sidelink a {margin-left:10px} 
+ 
+ b.ips {
+	font-family: Arial,"Quicksand Bold Regular";
+	font-size: 9pt;
+	color: #FFFFFF;
+}
+.wrapper {
+                 margin: 12px;
+                 width: 13px;
+                 height: 13px;
+                 border: 1px solid green;
+                 display: inline-block;
+             }
+.breadcrumbs             
+{
+ font-family:Arial;
+ font-weight:normal;
+ font-size:13px;
+ font-style:normal;
+ color: #ffffff;
+}
+.chequeFont             
+{
+ font-family:Arial;
+ font-weight:normal;
+ font-size:16px;
+ font-style:normal;
+ color: #000000;
+}
+.underline {text-decoration: underline;}
+.rightJustified {    text-align: right;}
+.AlertRed{font-family:Arial;
+ font-weight:normal;
+ font-size:11pt;
+ font-style:normal;
+ color: #ff0000;}
+ 
+.main-dialog-class{
+	font-family:Arial;
+ font-weight:normal;
+ font-size:20px;
+ font-style:normal;
+}
