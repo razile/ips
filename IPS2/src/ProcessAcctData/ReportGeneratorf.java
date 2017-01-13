@@ -156,7 +156,7 @@ public class ReportGeneratorf extends HttpServlet {
 			y_line2 = y_line2 - 20;
 			cb.setFontAndSize(bf_cambrial, 10);
 			// text ="Payment Date: " + invoicedate;
-			text = "Nous vous remercions d’avoir utilisé le service de chèque électronique IPS.";
+			text = "Nous vous remercions dï¿½avoir utilisï¿½ le service de chï¿½que ï¿½lectronique IPS.";
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			text = "Veuillez imprimer cette page pour vos dossiers.";
 			y_line2 = y_line2 - 20;
@@ -172,7 +172,7 @@ public class ReportGeneratorf extends HttpServlet {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 100, y_line2, 0);
 
 			cb.setFontAndSize(bf_cambria, 10);
-			text = "Expéditeur Bank Account: ";
+			text = "Expï¿½diteur Bank Account: ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cb.setFontAndSize(bf_cambrial, 10);
@@ -214,6 +214,8 @@ public class ReportGeneratorf extends HttpServlet {
 				cb.moveTo(62, y_line2);
 				cb.lineTo(100, y_line2);
 				cb.stroke();
+				
+				// FACTOR-CLIENT
 				sql = "SELECT it.InvoiceDate ,ip.InvId, case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT else Client.Name1 COLLATE DATABASE_DEFAULT end as name1,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId Left join Factor.dbo.Client  on Client.sysid = ip.payee where pa.sysid="
 						+ acctId;
 				String declined = request.getParameter("declined");
@@ -377,7 +379,7 @@ public class ReportGeneratorf extends HttpServlet {
 
 			table.addCell(c);
 
-			p = new Paragraph("N° de facture", cambria9);
+			p = new Paragraph("Nï¿½ de facture", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
@@ -411,13 +413,13 @@ public class ReportGeneratorf extends HttpServlet {
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_CENTER);
 			table.addCell(c);
-			p = new Paragraph("N° de confirmation", cambria9);
+			p = new Paragraph("Nï¿½ de confirmation", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.
 			table.addCell(c);
-			p = new Paragraph("Ètat", cambria9);
+			p = new Paragraph("ï¿½tat", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);

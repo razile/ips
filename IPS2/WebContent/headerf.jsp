@@ -54,6 +54,8 @@ rs3.close();
  PreparedStatement s=null;
  ResultSet rs2 =null;
  try{
+ 
+ // FACTOR-DEBTOR
  String sql22="SELECT Fac.DebtorId as 'dbid', Fac.Name1 + ' ' + Fac.Name2 as 'dbname',Deb.Password as 'dbpass', isnull(Deb.NewClient,'Y') as 'clnt' FROM dbo.Debtor Deb JOIN Factor.dbo.Debtor Fac ON Deb.OldDebtor_PK = Fac.SysId WHERE Fac.DebtorId =?";
  s = con33.prepareStatement(sql22);
  s.setString(1,debtrid);

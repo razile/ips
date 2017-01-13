@@ -127,6 +127,8 @@ public class DeletedInvoicef extends HttpServlet {
 
 			ResultSet rs = null;
 			java.sql.PreparedStatement ps = null;
+			
+			// FACTOR-DEBTOR
 			ps = connection
 					.prepareStatement("SELECT d.Name1 , d.Name2,d.DebtorId,i.InvoiceAmount,i.SysId from Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
 							+ invId);
@@ -174,7 +176,7 @@ public class DeletedInvoicef extends HttpServlet {
 			cbe.beginText();
 			cbe.setFontAndSize(bf_cambria, 14);
 
-			String text = "Transaction supprimée";
+			String text = "Transaction supprimï¿½e";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -183,7 +185,7 @@ public class DeletedInvoicef extends HttpServlet {
 			cbe.setFontAndSize(bf_cambrial, 10);
 
 			// text ="Payment Date: " + invoicedate;
-			text = "Nous vous remercions d’avoir utilisé le service de chèque électronique IPS.";
+			text = "Nous vous remercions dï¿½avoir utilisï¿½ le service de chï¿½que ï¿½lectronique IPS.";
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
 			y_line2 = y_line2 - 20;
@@ -202,7 +204,7 @@ public class DeletedInvoicef extends HttpServlet {
 					0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Montant supprimé : ";
+			text = "Montant supprimï¿½ : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -211,7 +213,7 @@ public class DeletedInvoicef extends HttpServlet {
 					0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Numéro du paiement supprimé : ";
+			text = "Numï¿½ro du paiement supprimï¿½ : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -240,7 +242,7 @@ public class DeletedInvoicef extends HttpServlet {
 
 			cbe.setFontAndSize(bf_cambria, 12);
 
-			text = "Paiements de facture supprimés:";
+			text = "Paiements de facture supprimï¿½s:";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -257,10 +259,10 @@ public class DeletedInvoicef extends HttpServlet {
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.setBorderColor(new Color(255, 0, 0));
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("N° de facture", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de facture", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("N° de bon de commande", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de bon de commande", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
 			c = new PdfPCell(new Paragraph("Montant", cambria9));

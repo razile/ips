@@ -127,6 +127,8 @@ public class DeletedInvoice extends HttpServlet {
 
 			ResultSet rs = null;
 			java.sql.PreparedStatement ps = null;
+			
+			// FACTOR-DEBTOR
 			ps = connection
 					.prepareStatement("SELECT d.Name1 , d.Name2,d.DebtorId,i.InvoiceAmount,i.SysId from Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
 							+ invId);

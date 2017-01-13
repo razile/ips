@@ -214,6 +214,8 @@ public class ReportGenerator extends HttpServlet {
 				cb.moveTo(62, y_line2);
 				cb.lineTo(100, y_line2);
 				cb.stroke();
+				
+				// FACTOR-CLIENT
 				sql = "SELECT it.InvoiceDate ,ip.InvId, case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT else Client.Name1 COLLATE DATABASE_DEFAULT end as name1,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId Left join Factor.dbo.Client  on Client.sysid = ip.payee where pa.sysid="
 						+ acctId;
 				String declined = request.getParameter("declined");

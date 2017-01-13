@@ -189,7 +189,10 @@ public class AdminReportf extends HttpServlet {
 				cb.moveTo(62, y_line2);
 				cb.lineTo(100, y_line2);
 				cb.stroke();
+				
+				// FACTOR-CLIENT-DEBTOR
 				sql = "SELECT it.InvoiceDate ,ip.InvId, case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT  else Client.Name1 COLLATE DATABASE_DEFAULT   end as name1,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId Left join Factor.dbo.Client  on Client.sysid = ip.payee left join Factor.dbo.Debtor d on pa.payerid = d.Sysid  where 1=1";
+				
 				String declined = request.getParameter("declined");
 				String status = "(";
 				boolean useStatus = false;
@@ -245,6 +248,7 @@ public class AdminReportf extends HttpServlet {
 					// sql = sql +" and it.InvoiceDate < '"+ dateEnd2 +"' ";
 				}
 
+				// FACTOR-CLIENT
 				sql = "select distinct payee,c.name1,c.name2 from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.SysId = it.SysAcctId join Factor.dbo.Client c on c.SysId =ip.payee where   it.InvoiceDate >= ? and it.InvoiceDate <?";
 
 				// CallableStatement cs3 =
@@ -258,6 +262,8 @@ public class AdminReportf extends HttpServlet {
 					text = rs3.getString("name1") + " "
 							+ rs3.getString("name2");
 					y_line2 = y_line2 - 20;
+					
+					// FACTOR-DEBTOR
 					sql = "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId join Factor.dbo.Debtor d on pa.payerid = d.Sysid   where   ip.payee = "
 							+ rs3.getString("payee");
 					PdfPTable table = CreateTable(text, y_line2, dateFrom,

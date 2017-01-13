@@ -145,6 +145,8 @@ public class ReviewPayment extends HttpServlet {
 					payerid = rs.getString("payerid");
 					amount = rs.getString("InvoiceAmount");
 				}
+				
+				// FACTOR-CLIENT
 				ps2 = connection
 						.prepareStatement("SELECT Name1,Name2 FROM  Factor.dbo.Client c join invoicepayment ip on ip.payee = c.SysId  join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
 				ps2.setString(1, selected);
@@ -208,6 +210,8 @@ public class ReviewPayment extends HttpServlet {
 					payerid = rs.getString("payerid");
 					amount = rs.getString("InvoiceAmount");
 				}
+				
+				// FACTOR-CLIENT
 				ps2 = connection
 						.prepareStatement("SELECT Name1,Name2 FROM  Factor.dbo.Client c join invoicepayment ip on ip.payee = c.SysId  join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
 				ps2.setString(1, selected);
@@ -1059,7 +1063,7 @@ public class ReviewPayment extends HttpServlet {
 			message = message
 					+ "Please follow up with the payer to rectify the situation.<br><br>";
 			// message = message +
-			// "<b>IPS eCheque – Online Payment Feature</b>";
+			// "<b>IPS eCheque ï¿½ Online Payment Feature</b>";
 			// final login="businessdevelopment";
 			// final String password="devness";
 			props = new Properties();
@@ -1161,7 +1165,7 @@ public class ReviewPayment extends HttpServlet {
 			// message = message +
 			// "Please follow up with the payer to rectify the situation.<br><br>";
 			// message = message +
-			// "<b>IPS eCheque – Online Payment Feature</b>";
+			// "<b>IPS eCheque ï¿½ Online Payment Feature</b>";
 			// final login="businessdevelopment";
 			// final String password="devness";
 			props = new Properties();
@@ -1220,6 +1224,8 @@ public class ReviewPayment extends HttpServlet {
 
 			ResultSet rs = null;
 			java.sql.PreparedStatement ps = null;
+			
+			// FACTOR-DEBTOR
 			ps = con.prepareStatement("SELECT d.Name1 , d.Name2,d.DebtorId,i.InvoiceAmount,i.SysId from Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
 					+ invId);
 			rs = ps.executeQuery();
@@ -1479,7 +1485,7 @@ public class ReviewPayment extends HttpServlet {
 			String sender = from; // replace this with a valid sender email
 									// address
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment deleted – " + name1; // this will
+			String subject = "eCheque payment deleted ï¿½ " + name1; // this will
 																	// be the
 																	// subject
 																	// of the
