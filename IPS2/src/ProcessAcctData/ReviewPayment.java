@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -89,9 +90,7 @@ public class ReviewPayment extends HttpServlet {
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
+
 		Connection connection = null;
 		try {
 			String act = request.getParameter("act");
@@ -104,17 +103,12 @@ public class ReviewPayment extends HttpServlet {
 				act = "Approve";
 			if (deleteAdmin != null && deleteAdmin.equals("on"))
 				act = "DeleteAdmin";
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
+
+			Map<String,Client> clients = DBClientDebtorService.getInstance().getClients();
+			
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+
 
 			javax.servlet.ServletContext context = null;
 			context = sc;
@@ -148,13 +142,15 @@ public class ReviewPayment extends HttpServlet {
 				
 				// FACTOR-CLIENT
 				ps2 = connection
-						.prepareStatement("SELECT Name1,Name2 FROM  Factor.dbo.Client c join invoicepayment ip on ip.payee = c.SysId  join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
+						.prepareStatement("SELECT ip.payee FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
 				ps2.setString(1, selected);
 				rs = ps2.executeQuery();
 
 				while (rs.next()) {
-					client = client + rs.getString("Name1") + " "
-							+ rs.getString("Name2") + ", ";
+					String payee = rs.getString("payee");
+					Client c = clients.get(payee);
+					client = client + c.getName1() + " "
+							+ c.getName2() + ", ";
 				}
 				if (client.length() > 0) {
 					client = client.substring(0, client.length() - 2);
@@ -213,13 +209,15 @@ public class ReviewPayment extends HttpServlet {
 				
 				// FACTOR-CLIENT
 				ps2 = connection
-						.prepareStatement("SELECT Name1,Name2 FROM  Factor.dbo.Client c join invoicepayment ip on ip.payee = c.SysId  join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
+						.prepareStatement("SELECT ip.payee from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
 				ps2.setString(1, selected);
 				rs = ps2.executeQuery();
 
 				while (rs.next()) {
-					client = client + rs.getString("Name1") + " "
-							+ rs.getString("Name2") + ", ";
+					String payee = rs.getString("payee");
+					Client c = clients.get(payee);
+					client = client + c.getName1() + " "
+							+ c.getName2() + ", ";
 				}
 				if (client.length() > 0) {
 					client = client.substring(0, client.length() - 2);
@@ -1225,8 +1223,10 @@ public class ReviewPayment extends HttpServlet {
 			ResultSet rs = null;
 			java.sql.PreparedStatement ps = null;
 			
+			Map<String, Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();			
+			
 			// FACTOR-DEBTOR
-			ps = con.prepareStatement("SELECT d.Name1 , d.Name2,d.DebtorId,i.InvoiceAmount,i.SysId from Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
+			ps = con.prepareStatement("SELECT pa.payerid, i.InvoiceAmount,i.SysId from PayersAccounts pa join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
 					+ invId);
 			rs = ps.executeQuery();
 			double invAmount = 0;
@@ -1234,9 +1234,11 @@ public class ReviewPayment extends HttpServlet {
 			String debtor = "";
 			// String invId;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+				name1 = d.getName1() + " " + d.getName2();
 				invAmount = Double.parseDouble(rs.getString("InvoiceAmount"));
-				debtor = rs.getString("DebtorId");
+				debtor = d.getDebtorId();
 
 			}
 			NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);

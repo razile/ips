@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Servlet implementation class ReportGenerator
@@ -53,8 +54,8 @@ public class AdminReportf extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
 
@@ -62,74 +63,43 @@ public class AdminReportf extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
-	// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";
-	String user = "sa";
-	String pass = "894xwhtm054ocwso";
-	// String user="root";
-	// String pass = "dbaDEV2013-";
-	// String user="appdev";
-	// String pass = "8Ecrespe";
-	// String user="root";
-	// String pass = "password";
 
 	int norows = 0;
 
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		Connection connection = null;
 		String sql;
 		try {
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, user, pass);
+			Map<String, Client> clients = DBClientDebtorService.getInstance().getClients();
+			Map<String, Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();
+
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL,
+					DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+
 			String dateFrom = request.getParameter("datepickerstart");
 			String dateEnd = request.getParameter("datepickerend");
-			// String acctId = request.getParameter("chkAccount");
-			// String payerid = request.getParameter("payerid");
-			// String sql2 =
-			// "Select * from PayersAccounts pa join Debtor d on pa.payerid = d.Sysid where d.SysId = "
-			// + payerid;
-			// CallableStatement cs =
-			// connection.prepareCall("{call padebtor(?,?) }");
-			// PreparedStatement ps2 = connection.prepareStatement(sql2);
-			// cs.setString(1, payerid);
-			// cs.setString(2, acctId);
-			// ResultSet rs2 = cs.executeQuery();//ps2.executeQuery();
 			String payer = "";
 			String account = "";
 			String currency = "";
 			String debtor = "";
-			/*
-			 * if (rs2!=null && rs2.next()) { payer = rs2.getString("name1") +
-			 * " " + rs2.getString("name2"); account =
-			 * rs2.getString("AccountNumber"); currency =
-			 * rs2.getString("CurrencyType"); debtor =
-			 * rs2.getString("DebtorId"); }
-			 */response.setContentType("application/pdf"); // Code 1
+			response.setContentType("application/pdf"); // Code 1
 			Document document = new Document();
-			// try{
-			BaseFont bf_courier = BaseFont.createFont(BaseFont.COURIER,
-					"Cp1252", false);
-			BaseFont bf_helv = BaseFont.createFont(BaseFont.HELVETICA,
-					"Cp1252", false);
-			BaseFont bf_cambrial = BaseFont
-					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/Cambria.ttf",
-							BaseFont.WINANSI, false);
-			BaseFont bf_cambria = BaseFont
-					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
-							BaseFont.WINANSI, false);
+			BaseFont bf_courier = BaseFont.createFont(BaseFont.COURIER, "Cp1252", false);
+			BaseFont bf_helv = BaseFont.createFont(BaseFont.HELVETICA, "Cp1252", false);
+			BaseFont bf_cambrial = BaseFont.createFont("http://live.invoicepayment.ca/ipspayers/IPS2/font/Cambria.ttf",
+					BaseFont.WINANSI, false);
+			BaseFont bf_cambria = BaseFont.createFont("http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+					BaseFont.WINANSI, false);
 			// http://localhost:8080/IPS2/
 			Font courier = new Font(bf_courier, 9);
 			Font helv = new Font(bf_helv, 9);
 			Font cambria9 = new Font(bf_cambria, 9);
 			Font cambrial9 = new Font(bf_cambrial, 9);
 			int y_line2 = 800;
-			PdfWriter writer = PdfWriter.getInstance(document,
-					response.getOutputStream()); // Code 2
+			PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream()); // Code
+																							// 2
 			document.open();
 			// PdfContentByte canvas = writer.getDirectContent();
 			document.add(new Paragraph(""));
@@ -182,16 +152,18 @@ public class AdminReportf extends HttpServlet {
 
 			if (sortby.equals("byDate")) {
 				text = "By Date: ";
-				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
-						y_line2, 0);
+				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 				y_line2 = y_line2 - 2;
 				cb.setLineWidth(1f);
 				cb.moveTo(62, y_line2);
 				cb.lineTo(100, y_line2);
 				cb.stroke();
-				
+
 				// FACTOR-CLIENT-DEBTOR
-				sql = "SELECT it.InvoiceDate ,ip.InvId, case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT  else Client.Name1 COLLATE DATABASE_DEFAULT   end as name1,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId Left join Factor.dbo.Client  on Client.sysid = ip.payee left join Factor.dbo.Debtor d on pa.payerid = d.Sysid  where 1=1";
+				sql= "SELECT it.InvoiceDate ,ip.InvId, ip.payee,"
+						+ "ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status " 
+						+ "FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.sysid = it.SysAcctId "
+						+ "where isnumeric(ip.payee)=1" ;			 
 				
 				String declined = request.getParameter("declined");
 				String status = "(";
@@ -215,14 +187,12 @@ public class AdminReportf extends HttpServlet {
 					status = status + ")";
 					sql = sql + " and it.status in " + status;
 				}
-				PdfPTable table = CreateTable("", y_line2, dateFrom, dateEnd,
-						cambria9, cambrial9, sql, true);
+				PdfPTable table = CreateTable("", y_line2, dateFrom, dateEnd, cambria9, cambrial9, sql, true, clients, debtors);
 				table.writeSelectedRows(0, -1, 60, y_line2, cb);
 
 			} else {
 				text = "By Supplier:";
-				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
-						y_line2, 0);
+				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 				y_line2 = y_line2 - 2;
 				cb.setLineWidth(1f);
 				cb.moveTo(62, y_line2);
@@ -230,7 +200,11 @@ public class AdminReportf extends HttpServlet {
 				cb.stroke();
 				cb.endText();
 				// sql =
-				// "select distinct payee,c.name1,c.name2 from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.SysId = it.SysAcctId join Client c on c.SysId =ip.payee where it.Active =1 and payerid = "
+				// "select distinct payee,c.name1,c.name2 from invoicepayment ip
+				// join invoicetransaction it on it.SysId =
+				// ip.InvoiceTransactionId join PayersAccounts pa on pa.SysId =
+				// it.SysAcctId join Client c on c.SysId =ip.payee where
+				// it.Active =1 and payerid = "
 				// +payerid;
 
 				// if (dateFrom !=null && dateFrom.length()>0)
@@ -238,8 +212,7 @@ public class AdminReportf extends HttpServlet {
 				String dateEnd2 = null;
 				if (dateEnd != null && dateEnd.length() > 0) {
 
-					SimpleDateFormat dateFormat = new SimpleDateFormat(
-							"yyyy-MM-dd");
+					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 					Calendar cd = Calendar.getInstance();
 					cd.setTime(dateFormat.parse(dateEnd));
 					cd.add(Calendar.DATE, 1);
@@ -249,7 +222,10 @@ public class AdminReportf extends HttpServlet {
 				}
 
 				// FACTOR-CLIENT
-				sql = "select distinct payee,c.name1,c.name2 from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.SysId = it.SysAcctId join Factor.dbo.Client c on c.SysId =ip.payee where   it.InvoiceDate >= ? and it.InvoiceDate <?";
+				sql= "select distinct payee from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId "
+						+ "join PayersAccounts pa on pa.SysId = it.SysAcctId  where isnumeric(ip.payee)=1 "
+						+ "and it.InvoiceDate between ? and ? "; 
+				
 
 				// CallableStatement cs3 =
 				// connection.prepareCall("{call ippaclient(?,?,?)}");
@@ -259,15 +235,18 @@ public class AdminReportf extends HttpServlet {
 				ps.setString(2, dateEnd2);
 				ResultSet rs3 = ps.executeQuery();
 				while (rs3.next()) {
-					text = rs3.getString("name1") + " "
-							+ rs3.getString("name2");
+					String payee = rs3.getString("payee");
+					Client client = clients.get(payee);
+					text = client.getName1() + " " + client.getName2();
 					y_line2 = y_line2 - 20;
-					
+
 					// FACTOR-DEBTOR
-					sql = "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId join Factor.dbo.Debtor d on pa.payerid = d.Sysid   where   ip.payee = "
-							+ rs3.getString("payee");
-					PdfPTable table = CreateTable(text, y_line2, dateFrom,
-							dateEnd, cambria9, cambrial9, sql, false);
+					sql= "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status, pa.payerid "
+							+ "FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.sysid = it.SysAcctId "
+							//+ "join Factor.dbo.Debtor d on pa.payerid = d.Sysid "
+							+ "where  isnumeric(ip.payee)=1 and ip.payee = " + payee ;
+					
+					PdfPTable table = CreateTable(text, y_line2, dateFrom, dateEnd, cambria9, cambrial9, sql, false, clients, debtors);
 					table.writeSelectedRows(0, -1, 60, y_line2, cb);
 					y_line2 = y_line2 - 10 - norows * 27;
 				}
@@ -295,16 +274,13 @@ public class AdminReportf extends HttpServlet {
 		}
 	}
 
-	PdfPTable CreateTable(String name, int y_line2, String dateFrom,
-			String dateEnd, Font cambria9, Font cambrial9, String sql,
-			boolean showDebtor) {
+	PdfPTable CreateTable(String name, int y_line2, String dateFrom, String dateEnd, Font cambria9, Font cambrial9, String sql, boolean showDebtor, Map<String,Client> clients, Map<String,Debtor> debtors) {
 		Connection connection = null;
 		norows = 0;
 		PdfPTable table = null;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, user, pass);
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
 
 			int columns = 0;
 			if (showDebtor) {
@@ -408,11 +384,9 @@ public class AdminReportf extends HttpServlet {
 			// loop=0;
 			// counter=0;
 			while (rs.next()) {
-				Date date2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-						.parse(rs.getString("InvoiceDate"));
+				Date date2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(rs.getString("InvoiceDate"));
 
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-						"yyyy/MM/dd HH:mm");
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 				String datep = simpleDateFormat.format(date2);
 
 				p = new Paragraph(datep, cambrial9);
@@ -431,7 +405,14 @@ public class AdminReportf extends HttpServlet {
 
 				table.addCell(c);
 				if (showDebtor) {
-					p = new Paragraph(rs.getString("name1"), cambrial9);
+					String payee = rs.getString("payee");
+	            	Client client = clients.get(payee);
+	            	
+	            	String nameToUse = client.getName1();
+	            	if (nameToUse == null || nameToUse.length() == 0) {
+	            		nameToUse = payee;
+	            	}
+	            	p = new  Paragraph(nameToUse,cambrial9);
 					p.setFont(cambria9);
 					c = new PdfPCell(p);
 					c.setBorder(Rectangle.NO_BORDER);
@@ -439,7 +420,10 @@ public class AdminReportf extends HttpServlet {
 
 					table.addCell(c);
 				}
-				p = new Paragraph(rs.getString("debtorname"), cambrial9);
+	            String payerid = rs.getString("payerid");
+	            Debtor debtor = debtors.get(payerid);
+	            String debtorname = debtor.getName1() + " " + debtor.getName2() + " (" + debtor.getDebtorId() + ")"; 
+	         	p = new  Paragraph(debtorname,cambrial9);
 				p.setFont(cambria9);
 				c = new PdfPCell(p);
 				c.setBorder(Rectangle.NO_BORDER);

@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -86,17 +87,9 @@ public class DeletedInvoice extends HttpServlet {
 			// String connectionURL =
 			// "jdbc:mysql://localhost:3306/ipspayment";// newData is the
 			// database
-			String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";// newData
-																					// is
-																					// the
-																					// database
-			// String invId =null;
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+
 			response.setContentType("application/pdf"); // Code 1
 			// response.setHeader("Content-Disposition ,filename=\"" +
 			// "text.pdf" + "\"");
@@ -129,18 +122,24 @@ public class DeletedInvoice extends HttpServlet {
 			java.sql.PreparedStatement ps = null;
 			
 			// FACTOR-DEBTOR
+			// d.Name1 , d.Name2,d.DebtorId,
+			// Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId
 			ps = connection
-					.prepareStatement("SELECT d.Name1 , d.Name2,d.DebtorId,i.InvoiceAmount,i.SysId from Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
+					.prepareStatement("SELECT i.InvoiceAmount,i.SysId, pa.PayerId from PayersAccounts pa join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
 							+ invId);
 			rs = ps.executeQuery();
 			double invAmount = 0;
 			String name1 = "";
 			String debtor = "";
 			// String invId;
+			
+			Map<String,Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();			
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerId = rs.getString("payerid");
+				Debtor d = debtors.get(payerId);
+				name1 = d.getName1() + " " + d.getName2();
 				invAmount = Double.parseDouble(rs.getString("InvoiceAmount"));
-				debtor = rs.getString("DebtorId");
+				debtor = d.getDebtorId();
 
 			}
 			NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);

@@ -11,6 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="ProcessAcctData.*" %>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -303,8 +304,11 @@ try
 	//ps = con.prepareStatement(sql);
 	//PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2 FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join InsuiteSybaseCoreRep.Debtor d  on d.SysId =a.payerId where  InvoiceDate >subtime(now(),'24:0:0') order by t.SysId;"
 	
+	
 	// FACTOR-DEBTOR
-	PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2,t.newEmail,a.payerId FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join Factor.dbo.Debtor d  on d.SysId =a.payerId where  t.status ='Pending' or t.status ='Submitted'  order by t.SysId desc;");
+	Map<String, Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();
+	
+	PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,t.newEmail,a.payerId FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid where  t.status ='Pending' or t.status ='Submitted'  order by t.SysId desc;");
 	//ps2.setInt(1, payerid);
 	rs = ps2.executeQuery(); 
 	int counter =0;
@@ -313,6 +317,9 @@ try
 		String email1="";
 		String email2="";
 		String spayerid = rs.getString("payerId");
+		
+		Debtor d = debtors.get(spayerid);
+		
 		CallableStatement cs2 = con.prepareCall("exec Get_Emails ? ");
 	    cs2.setString(1, spayerid);
 	    rs2 = cs2.executeQuery();
@@ -331,7 +338,7 @@ try
 			<td><h3>Change email to:&nbsp;<%=rs.getString("newEmail")%> </h3></td>
 	<% 	}%>
 <td><h6><%= rs.getString("SysId") %></h6></td>
-<td><h6><%String name= rs.getString("Name1") + " " +rs.getString("Name2") ; 
+<td><h6><%String name= d.getName1() + " " + d.getName2() ; 
 if (name.length()>32)
 {name=name.substring(0,31);}
 %><%=name%></h6></td>
