@@ -93,18 +93,11 @@ public class InvoicePayment extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
-			String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
+			
 			Connection connection = null;
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+
 			String accountid = request.getParameter("account");
 			String totalpayment = request.getParameter("totalPayment");
 			totalpayment = totalpayment.substring(1);
@@ -310,8 +303,8 @@ public class InvoicePayment extends HttpServlet {
 				while (rs.next()) {
 					payerid = rs.getString("payerid");
 				}
-				SavePDF(id,connectionURL);
-				SendEmail(String.valueOf(id),totalpayment,connectionURL);
+				SavePDF(id);
+				SendEmail(String.valueOf(id),totalpayment);
 				javax.servlet.ServletContext context = null;
 				context = sc;
 				// String path =context.getInitParameter("IPS2Path").toString();
@@ -327,14 +320,15 @@ public class InvoicePayment extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
-public void SendEmail(String id,String totalPaymentOriginal, String connectionURL){
+public void SendEmail(String id,String totalPaymentOriginal){
 	try{
 		String from = "webserver@invoicepayment.ca";
 		String to2 = "Youssef.shatila@systembind.com";
 		Connection connection = null;
-		Class.forName("net.sourceforge.jtds.jdbc.Driver");
-		connection = (Connection) DriverManager.getConnection(
-							connectionURL, "sa", "894xwhtm054ocwso");
+		
+		Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+		connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+			
 		CallableStatement cs = connection.prepareCall("exec citdebtor ?");
 		cs.setInt(1, Integer.parseInt(id));
 		ResultSet rs = cs.executeQuery();
@@ -354,7 +348,7 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 				+ " through the IPS eCheque.<br>";
 		content = content + "<a href=http://localhost:8080/IPS2/Invoices/Invoice_" + id + ".pdf>" + "Invoice_" + id + ".pdf</a>";
 	    String sender = from;
-	    String subject = "eCheque payment submitted – " + nameWithDebtor;  ////////////////
+	    String subject = "eCheque payment submitted ï¿½ " + nameWithDebtor;  ////////////////
 	    textBodyPart.setText(content);
 	    InternetAddress iaSender = new InternetAddress(sender);
 	    InternetAddress iaRecipient = new InternetAddress(adminEmail);
@@ -389,25 +383,13 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 	catch(Exception e){
 	}	
 }
-	public void SavePDF(int transId,String connectionURL) {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		// String connectionURL =
-		// "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
-		//String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
+	public void SavePDF(int transId) {
+	
 		Connection connection = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// response.setContentType("application/pdf"); // Code 1
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+				
 			
 			Document document = new Document();
 			String id = transId + "";
@@ -649,7 +631,7 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 			 * " has submitted a payment in the amount of " +
 			 * totalpaymentoriginal +
 			 * " through the IPS eCheque. Details are attached."; String sender
-			 * = from; String subject = "eCheque payment submitted – " + name1 ;
+			 * = from; String subject = "eCheque payment submitted ï¿½ " + name1 ;
 			 * //this will be the subject of the email
 			 * textBodyPart.setText(content); InternetAddress iaSender = new
 			 * InternetAddress(sender); InternetAddress iaRecipient = new

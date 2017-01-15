@@ -107,9 +107,6 @@ public class InvoicePaymentf extends HttpServlet {
 		int level = 0;
 		String acctid = "";
 		String payerid = "";
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
 		Connection connection = null;
 		try {
 
@@ -117,17 +114,10 @@ public class InvoicePaymentf extends HttpServlet {
 			String transId = request.getParameter("transId");
 			int id = 0;
 			int counter = 0;
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
+			
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+				
 			acctid = request.getParameter("AcctId");
 			String invNo = request.getParameter("invoiceNumber");
 			String payee = request.getParameter("payee");

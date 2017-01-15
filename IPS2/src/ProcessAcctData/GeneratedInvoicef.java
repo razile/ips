@@ -92,21 +92,13 @@ public class GeneratedInvoicef extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
+		
 		Connection connection = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
+			
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+
 
 			response.setContentType("application/pdf"); // Code 1
 			Document document = new Document();
@@ -165,7 +157,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			cbe.beginText();
 			cbe.setFontAndSize(bf_cambria, 14);
 
-			String text = "Transaction terminée";
+			String text = "Transaction terminï¿½e";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -176,7 +168,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			cbe.setFontAndSize(bf_cambriaz, 10);
 
 			// text ="Payment Date: " + invoicedate;
-			text = "Nous vous remercions d’avoir utilisé le service de chèque électronique IPS.";
+			text = "Nous vous remercions dï¿½avoir utilisï¿½ le service de chï¿½que ï¿½lectronique IPS.";
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
@@ -220,7 +212,7 @@ public class GeneratedInvoicef extends HttpServlet {
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Expéditeur Bank Account: "
+				text = "Expï¿½diteur Bank Account: "
 						+ rs.getString("TransitNumber") + " "
 						+ rs.getString("BranchCode") + " "
 						+ rs.getString("AccountNumber") + " "
@@ -238,14 +230,14 @@ public class GeneratedInvoicef extends HttpServlet {
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Numéro de confirmation : " + id;
+				text = "Numï¿½ro de confirmation : " + id;
 				y_line2 = y_line2 - 20;
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Numéro de confirmation : "
+				text = "Numï¿½ro de confirmation : "
 						+ rs.getString("InvoiceDate");
 				y_line2 = y_line2 - 20;
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -270,7 +262,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 
-			text = "demande en ligne avant 18:00,votre heure locale le même jour où vous avez fait ";
+			text = "demande en ligne avant 18:00,votre heure locale le mï¿½me jour oï¿½ vous avez fait ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
@@ -297,7 +289,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			table.setTotalWidth(500);
 
 			// cb.setFontAndSize(bf_cambria, 8);
-			Paragraph p = new Paragraph("Factures payées :", cambria12);
+			Paragraph p = new Paragraph("Factures payï¿½es :", cambria12);
 			// p.setFont(cambria9);
 			PdfPCell c = new PdfPCell(p);
 
@@ -314,10 +306,10 @@ public class GeneratedInvoicef extends HttpServlet {
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.setBorderColor(new Color(255, 0, 0));
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("N° de facture", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de facture", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("N° de bon de commande", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de bon de commande", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
 			c = new PdfPCell(new Paragraph("Montant", cambria9));
@@ -452,7 +444,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			String sender = from; // replace this with a valid sender email
 									// address
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment submitted – " + name1; // this
+			String subject = "eCheque payment submitted ï¿½ " + name1; // this
 																		// will
 																		// be
 																		// the

@@ -70,23 +70,13 @@ public class GeneratedInvoice extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		// String connectionURL =
-		// "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
+	
 		Connection connection = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
+			
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+			
 			response.setContentType("application/pdf"); // Code 1
 			Document document = new Document();
 			String id = request.getParameter("hiddenId");
@@ -324,7 +314,7 @@ public class GeneratedInvoice extends HttpServlet {
 					+ totalpaymentoriginal
 					+ " through the IPS eCheque. Details are attached.";
 			String sender = from;
-			String subject = "eCheque payment submitted – " + name1; // this
+			String subject = "eCheque payment submitted ï¿½ " + name1; // this
 																		// will
 																		// be
 																		// the

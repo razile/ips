@@ -330,10 +330,9 @@ public class ReportGenerator extends HttpServlet {
 		norows = 0;
 		PdfPTable table = null;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, user, pass);
-
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+				
 			int columns = 0;
 			if (showDebtor) {
 				columns = 7;

@@ -56,9 +56,6 @@ public class ProcessAcctf extends HttpServlet {
 		ServletContext context = getServletContext();
 		String ids = "";
 		String acctid = "";
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";// newData
 
 		String act = request.getParameter("act");
 		String payerId = request.getParameter("PayerId");
@@ -68,22 +65,13 @@ public class ProcessAcctf extends HttpServlet {
 		{
 			Connection connection = null;
 
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			String driverName2 = "net.sourceforge.jtds.jdbc.Driver";
-			Class.forName(driverName2);
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// String driverName2 = "com.mysql.jdbc.Driver";
+			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+				
 
 			sql = "aaab";
 
-			if (act.equals("Mettre à jour") || act.equals("Update")) {
+			if (act.equals("Mettre ï¿½ jour") || act.equals("Update")) {
 				sql = "bbb";
 				acctid = request.getParameter("AcctId");
 
