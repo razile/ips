@@ -12,6 +12,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@page import="ProcessAcctData.*"%>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -21,7 +22,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">  
     </head>  
     <body>
-    <%! String driverName = "com.mysql.jdbc.Driver";%>
+ 
 <%@ include file="connection.jsp" %>
      <%  
       String area = request.getParameter("accountId");  
@@ -30,8 +31,10 @@
         response.setHeader("Cache-Control", "no-cache");  
         try {  
             String buffer = "<div>";  
-            Class.forName(driverName);
-            Connection con = DriverManager.getConnection(url1,user1,psw1);
+        	Class.forName(DBProperties.JDBC_SYBASE10_DRIVER);
+        	// con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+        	Connection con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+
             //Connection con = ConnectionManager.getConnection();  
             Statement stmt = con.createStatement();  
             String query = "Select f.Flat_No,a.Building_Name,t.Flat_Type from tblflat f,tblarea a,tblflattype t where f.Area_Code=a.Area_Code AND f.Flat_Code=t.Flat_Code AND f.Status ='"+ftype+"' AND Area_Name='" + area + "'";  

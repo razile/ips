@@ -5,6 +5,7 @@
 <%@page import="java.util.*,java.sql.*,java.io.*" %>
 <%@page import="javax.servlet.*" %>
 <%@page import="javax.servlet.http.*" %>
+<%@page import="ProcessAcctData.*"%>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -21,12 +22,12 @@
 <% 
 String accid=request.getParameter("str");
 String pid=request.getParameter("pid");
-String driverName = "net.sourceforge.jtds.jdbc.Driver";
+
 try{
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
-Class.forName("net.sourceforge.jtds.jdbc.SybDriver");
-con1 = DriverManager.getConnection(url1,user1,psw1);
+Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+
 
 String sql = "SELECT SysId,TransitNumber,BranchCode,AccountNumber,CurrencyType FROM PayersAccounts pa where pa.SysId="+accid;
 ps = con.prepareStatement(sql);

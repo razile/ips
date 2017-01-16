@@ -13,20 +13,17 @@
 String plog = (String) request.getParameter("pyid");
 if (plog == null)plog= request.getParameter("plog");
 if (plog == null)plog= (String)request.getAttribute("pyid");
-if (plog==null) plog= userid;
+// if (plog==null) plog= userid;
 String pnam = "";
 String piid = plog;
 Connection con2 = null;
-String driverName2 = "com.sybase.jdbc3.jdbc.SybDriver";
-Class.forName(driverName2);
-// String url1 = "jdbc:sybase:Tds:ips-srvsb6.ips-corporation.net:2638/factorsql_dbserver";
-// String user1= "dba"; 
-// String psw1 = "dscsql";
-String url2= "jdbc:jtds:sqlserver://192.168.1.41/ips";
-Connection  con22 = DriverManager.getConnection(url1,user1,psw1);
-Connection consyb =  DriverManager.getConnection(url11,user11,psw11);
+
+Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+//con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+Connection con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+
 String sql23 = "select debtorid from Debtor where sysid ='" + piid+"'";
-PreparedStatement ps3  = con22.prepareStatement(sql23);
+PreparedStatement ps3  = con1.prepareStatement(sql23);
 ResultSet rs3 = ps3.executeQuery();
 String debtrid = null;
 if(rs3.next()){
@@ -58,7 +55,7 @@ try{
 	finally{
 		s.close();
  		//rs2.close();
- 		con22.close();
+ 		con1.close();
  		//con33.close();	
  		}
 	//=============================================================

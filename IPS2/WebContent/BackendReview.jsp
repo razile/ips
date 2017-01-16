@@ -306,7 +306,7 @@ try
 	
 	
 	// FACTOR-DEBTOR
-	Map<String, Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();
+	Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();
 	
 	PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,t.newEmail,a.payerId FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid where  t.status ='Pending' or t.status ='Submitted'  order by t.SysId desc;");
 	//ps2.setInt(1, payerid);

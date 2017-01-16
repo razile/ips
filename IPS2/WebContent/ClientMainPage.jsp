@@ -79,15 +79,16 @@
 <%@ include file="connection.jsp" %>
 
 <%
-Connection con = null;
+Connection con1 = null;
 PreparedStatement ps = null;
 try
 {
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+//con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
 int payerId=Integer.parseInt(session.getAttribute("pyid").toString());
 String sql = "SELECT Name1,DebtorId,street1,street2,city,state,country,zip from Debtor join Address on Address.SysParentId = Debtor.SysId where Address.ParentTable='DEBTOR' and Debtor.SysId="+payerId;
-ps = con.prepareStatement(sql);
+ps = con1.prepareStatement(sql);
 ResultSet rs = ps.executeQuery(); 
 %>
 <table cellpadding=0 cellspacing=0 style="vertical-align:top;width:400px" border=0> 
@@ -123,8 +124,8 @@ ResultSet rs = ps.executeQuery();
        <%
        } 
 finally{
-    	   if ( con != null )  
-    		      con.close();  
+    	   if ( con1 != null )  
+    		      con1.close();  
        }
        
        %>     

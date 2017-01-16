@@ -275,7 +275,7 @@ if (userid==null)
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>	
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
+
 
 
 <%
@@ -292,10 +292,10 @@ catch(Exception e){e.printStackTrace();}
 String debtorid=null;
 try
 {
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
-Class.forName("com.sybase.jdbc3.jdbc.SybDriver");
-con1 = DriverManager.getConnection(url1,user1,psw1);
+Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+
 
 %>
   

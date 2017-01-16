@@ -81,7 +81,7 @@ var clicked;
 	src='http://cdn.renderedfont.com/js/renderedfont-0.8.min.js#free'></script> -->
 </head>
 <body>
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
+
 <%@ include file="connection.jsp" %>
 	<%
 boolean exist =false;
@@ -103,8 +103,10 @@ ResultSet rs =null;
 PreparedStatement ps = null;
 try
 {
-Class.forName(driverName);
-con =  DriverManager.getConnection(url,user,psw);
+Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+
 String sql = "select * from PayersAccounts where payerid ="+debtorid;
  ps = con.prepareStatement(sql);
  rs = ps.executeQuery();
@@ -113,8 +115,7 @@ if (rs.next())
 	exist =true;
 	
 }
- //con = DriverManager.getConnection(url,user,psw);
-con1 = DriverManager.getConnection(url1,user1,psw1);
+
 
  sql = "SELECT Name1, Name2 FROM Debtor d where d.SysId="+debtorid;
 ps = con1.prepareStatement(sql);

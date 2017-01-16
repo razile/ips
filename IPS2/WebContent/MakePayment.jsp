@@ -603,11 +603,11 @@ finally{}%>
      
      <select name=payee id=payee>
     <% 
-     	// String driverName3 = "com.sybase.jdbc3.jdbc.SybDriver"; 
-     	//Class.forName(driverName3);
-     //	Connection consyb =  DriverManager.getConnection(url11,user11,psw11);
+   	   Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+   	   //con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+        Connection con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
      	String sql22="SELECT Cli.Name1, Cli.SysId FROM Debtor Deb JOIN Account Acc ON Acc.SysDtrId = Deb.Sysid JOIN Relation Rel ON Rel.Sysid = Acc.SysRelId JOIN Client Cli ON Cli.SysId = Rel.SysClientId WHERE Deb.SysId = ? ORDER BY 1";
- 	 	s = consyb.prepareStatement(sql22);
+ 	 	s = con1.prepareStatement(sql22);
  	 	s.setString(1,Integer.toString(payerid));
  		String id ="";
  		String clientName = "";

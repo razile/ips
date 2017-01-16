@@ -13,6 +13,8 @@
 <%@ page import="java.util.Locale"%>
 <%@ page buffer="16kb"%>
 <%@ page import="javax.servlet.*"%>
+<%@page import="ProcessAcctData.*"%>
+
 <html>
 <head>
  <link rel="stylesheet" href="payer.css" type="text/css"/>
