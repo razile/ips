@@ -12,6 +12,16 @@ public class Debtor {
 		// TODO Auto-generated constructor stub
 	}
 
+	
+	public Debtor(String sysid, String name1, String name2, String debtorId) {
+		super();
+		this.sysid = sysid;
+		this.name1 = name1;
+		this.name2 = name2;
+		this.debtorId = debtorId;
+	}
+
+
 	public String getSysid() {
 		return sysid;
 	}

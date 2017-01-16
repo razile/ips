@@ -10,6 +10,13 @@ public class Client {
 		// TODO Auto-generated constructor stub
 	}
 
+	public Client(String sysid, String name1, String name2) {
+		super();
+		this.sysid = sysid;
+		this.name1 = name1;
+		this.name2 = name2;
+	}
+
 	public String getSysid() {
 		return sysid;
 	}
