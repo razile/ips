@@ -69,8 +69,8 @@ public class AdminReport extends HttpServlet {
 		 String  sql;
 		try{
 			
-				Map<String,Client> clients = DBClientDebtorService.getInstance().getClients();
-				Map<String, Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();
+				Map<String,Client> clients = FactorDBService.getInstance().getClients();
+				Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();
 
 				Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
 				connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);

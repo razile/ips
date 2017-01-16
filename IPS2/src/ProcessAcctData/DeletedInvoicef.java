@@ -85,6 +85,7 @@ public class DeletedInvoicef extends HttpServlet {
 			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
 			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
 
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
 			response.setContentType("application/pdf"); // Code 1
 			// response.setHeader("Content-Disposition ,filename=\"" +
 			// "text.pdf" + "\"");
@@ -125,7 +126,7 @@ public class DeletedInvoicef extends HttpServlet {
 			String name1 = "";
 			String debtor = "";
 			// String invId;
-			Map<String,Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();			
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();			
 			while (rs.next()) {
 				String payerId = rs.getString("payerid");
 				Debtor d = debtors.get(payerId);
@@ -282,6 +283,12 @@ public class DeletedInvoicef extends HttpServlet {
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
+			
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
 				// table.addCell(String.valueOf(id));
 				// table.addCell("Amount");
 
@@ -291,15 +298,20 @@ public class DeletedInvoicef extends HttpServlet {
 				// table.addCell(c);
 
 				// name="clientid" + counter;
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+				
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 

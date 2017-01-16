@@ -4,24 +4,24 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Map;
 
-public class DBClientDebtorService {
+public class FactorDBService {
 
 	private final String connectionURL = "jdbc:sybase:Tds:192.168.10.11:2638/factorsql_dbserver/Factor";
 	private final String username = "admin";
 	private final String password = "adminco";
 	
-	private static DBClientDebtorService instance;
+	private static FactorDBService instance;
 	
 	static  {
-		instance = new DBClientDebtorService();
+		instance = new FactorDBService();
 		
 	}
 	
 
-	private DBClientDebtorService() {}
+	private FactorDBService() {}
 	
 
-	public static DBClientDebtorService getInstance() {
+	public static FactorDBService getInstance() {
 		return instance;
 	}
 	
@@ -44,6 +44,10 @@ public class DBClientDebtorService {
 		connection = (Connection) DriverManager.getConnection(connectionURL, username, password);
 		
 		
+		return null;
+	}
+	
+	public Invoice getInvoice(String sysid) {
 		return null;
 	}
 	

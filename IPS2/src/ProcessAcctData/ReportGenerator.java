@@ -74,7 +74,8 @@ public class ReportGenerator extends HttpServlet {
 		PdfWriter writer;
 		try {
 			
-			Map<String,Client> clients = DBClientDebtorService.getInstance().getClients();
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();			
 
 			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
 			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
@@ -83,23 +84,23 @@ public class ReportGenerator extends HttpServlet {
 			String dateEnd = request.getParameter("datepickerend");
 			String acctId = request.getParameter("chkAccount");
 			String payerid = request.getParameter("payerid");
-			// String sql2 =
-			// "Select * from PayersAccounts pa join Debtor d on pa.payerid = d.Sysid where d.SysId = "
+			String sql2 = "Select * from PayersAccounts pa where pa.SysId = " + acctId;
 			// + payerid;
-			CallableStatement cs = connection.prepareCall("exec padebtor ?,? ");
-			// PreparedStatement ps2 = connection.prepareStatement(sql2);
-			cs.setString(1, payerid);
-			cs.setString(2, acctId);
-			ResultSet rs2 = cs.executeQuery();// ps2.executeQuery();
+			//CallableStatement cs = connection.prepareCall("exec padebtor ?,? ");
+			PreparedStatement ps2 = connection.prepareStatement(sql2);
+			//cs.setString(1, payerid);
+			//cs.setString(2, acctId);
+			ResultSet rs2 =   ps2.executeQuery(); // cs.executeQuery();// 
 			String payer = "";
 			String account = "";
 			String currency = "";
 			String debtor = "";
-			if (rs2 != null && rs2.next()) {
-				payer = rs2.getString("name1") + " " + rs2.getString("name2");
+			Debtor d = debtors.get(payerid);
+			if (rs2 != null && rs2.next() && d != null) {
+				payer = d.getName1() + " " + d.getName2();
 				account = rs2.getString("AccountNumber");
 				currency = rs2.getString("CurrencyType");
-				debtor = rs2.getString("DebtorId");
+				debtor = d.getDebtorId();
 			}
 			response.setContentType("application/pdf"); // Code 1
 			Document document = new Document();
@@ -269,12 +270,14 @@ public class ReportGenerator extends HttpServlet {
 				cs3.setString(3, dateEnd2);
 				ResultSet rs3 = cs3.executeQuery();
 				while (rs3.next()) {
-					if ((rs3.getString("name1") == null)
-							&& (rs3.getString("name2") == null))
-						text = rs3.getString("payee");
+					String payee = rs3.getString("payee");
+					Client c = clients.get(payee);
+					
+					if (c == null)
+						text = payee;
 					else
-						text = rs3.getString("name1") + " "
-								+ rs3.getString("name2");
+						text = c.getName1() + " "
+								+ c.getName2();
 					y_line2 = y_line2 - 20;
 					sql = "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId where pa.sysid="
 							+ acctId

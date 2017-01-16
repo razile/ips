@@ -71,8 +71,8 @@ public class AdminReportf extends HttpServlet {
 		Connection connection = null;
 		String sql;
 		try {
-			Map<String, Client> clients = DBClientDebtorService.getInstance().getClients();
-			Map<String, Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();
+			Map<String, Client> clients = FactorDBService.getInstance().getClients();
+			Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();
 
 			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
 			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL,
@@ -227,10 +227,9 @@ public class AdminReportf extends HttpServlet {
 						+ "and it.InvoiceDate between ? and ? "; 
 				
 
-				// CallableStatement cs3 =
-				// connection.prepareCall("{call ippaclient(?,?,?)}");
+			
 				PreparedStatement ps = connection.prepareStatement(sql);
-				// ps.setString(1, payerid);
+	
 				ps.setString(1, dateFrom);
 				ps.setString(2, dateEnd2);
 				ResultSet rs3 = ps.executeQuery();

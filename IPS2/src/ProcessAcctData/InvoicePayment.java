@@ -37,8 +37,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
-import java.util.Locale;
-import java.util.Properties;
+
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
@@ -97,7 +96,8 @@ public class InvoicePayment extends HttpServlet {
 			Connection connection = null;
 			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
 			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
 			String accountid = request.getParameter("account");
 			String totalpayment = request.getParameter("totalPayment");
 			totalpayment = totalpayment.substring(1);
@@ -291,11 +291,11 @@ public class InvoicePayment extends HttpServlet {
 				PreparedStatement ps = null;
 				// String sql =
 				// "SELECT d.Name1 , d.Name2, d.DebtorId,i.InvoiceDate,i.InvoiceAmount,a.AccountNumber,a.CurrencyType FROM Debtor d join PayersAccounts a on a.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = a.SysId where i.SysId="+id;
-				CallableStatement cs = connection
-						.prepareCall("{call citdebtor(?)}");
-				cs.setInt(1, id);
-				// ps = connection.prepareStatement(sql);
-				rs = cs.executeQuery();
+		//		CallableStatement cs = connection
+		//				.prepareCall("{call citdebtor(?)}");
+		//		cs.setInt(1, id);
+		//		// ps = connection.prepareStatement(sql);
+		//		rs = cs.executeQuery();
 				PreparedStatement ps3 = connection
 						.prepareStatement("SELECT payerid FROM PayersAccounts  p inner join invoicetransaction t on p.sysid = t.sysacctid where t.sysid = "
 								+ id);
@@ -303,8 +303,8 @@ public class InvoicePayment extends HttpServlet {
 				while (rs.next()) {
 					payerid = rs.getString("payerid");
 				}
-				SavePDF(id);
-				SendEmail(String.valueOf(id),totalpayment);
+				SavePDF(id, clients, debtors);
+				SendEmail(String.valueOf(id),totalpayment, debtors);
 				javax.servlet.ServletContext context = null;
 				context = sc;
 				// String path =context.getInitParameter("IPS2Path").toString();
@@ -320,7 +320,7 @@ public class InvoicePayment extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
-public void SendEmail(String id,String totalPaymentOriginal){
+public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> debtors){
 	try{
 		String from = "webserver@invoicepayment.ca";
 		String to2 = "Youssef.shatila@systembind.com";
@@ -335,11 +335,15 @@ public void SendEmail(String id,String totalPaymentOriginal){
 		String totalpaymentoriginal = null;
 		String nameWithDebtor ="";
 		while (rs.next()) {
-			//name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+			String payerid = rs.getString("payerid");
+			Debtor d = debtors.get(payerid);
+		
 			totalpaymentoriginal = rs.getString("InvoiceAmount");
-			nameWithDebtor = "Payer: " + rs.getString("Name1") + " "
-				+ rs.getString("Name2") + " / ("
-				+ rs.getString("DebtorId").trim() + ")";
+			if (d!=null) {
+				nameWithDebtor = "Payer: " + d.getName1() + " "
+						+ d.getName2() + " / ("
+						+ d.getDebtorId().trim() + ")";
+			}
 		}
 		MimeBodyPart textBodyPart = new MimeBodyPart();
 		String content = "Please note that " + nameWithDebtor 
@@ -383,7 +387,7 @@ public void SendEmail(String id,String totalPaymentOriginal){
 	catch(Exception e){
 	}	
 }
-	public void SavePDF(int transId) {
+	public void SavePDF(int transId, Map<String,Client> clients, Map<String,Debtor> debtors) {
 	
 		Connection connection = null;
 		try {
@@ -460,11 +464,16 @@ public void SendEmail(String id,String totalPaymentOriginal){
 			rs = cs.executeQuery();
 			String totalpaymentoriginal = null;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+			
+				
 				totalpaymentoriginal = rs.getString("InvoiceAmount");
-				text = "Payer: " + rs.getString("Name1") + " "
-						+ rs.getString("Name2") + " / ("
-						+ rs.getString("DebtorId").trim() + ")";
+				if (d!=null) {
+					text = "Payer: " + d.getName1() + " "
+							+ d.getName2() + " / ("
+							+ d.getDebtorId().trim() + ")";
+				}
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -565,14 +574,22 @@ public void SendEmail(String id,String totalPaymentOriginal){
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			while (rs.next()) {
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+		
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 				c = new PdfPCell(new Paragraph(rs.getString("PoNumber"),

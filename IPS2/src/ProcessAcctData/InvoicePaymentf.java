@@ -47,8 +47,6 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
 
-import java.util.Properties;
-
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
@@ -117,7 +115,7 @@ public class InvoicePaymentf extends HttpServlet {
 			
 			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
 			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-				
+		
 			acctid = request.getParameter("AcctId");
 			String invNo = request.getParameter("invoiceNumber");
 			String payee = request.getParameter("payee");
@@ -291,11 +289,11 @@ public class InvoicePaymentf extends HttpServlet {
 			PreparedStatement ps = null;
 			// String sql =
 			// "SELECT d.Name1 , d.Name2, d.DebtorId,i.InvoiceDate,i.InvoiceAmount,a.AccountNumber,a.CurrencyType FROM Debtor d join PayersAccounts a on a.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = a.SysId where i.SysId="+id;
-			CallableStatement cs = connection
-					.prepareCall("{call citdebtor(?)}");
-			cs.setInt(1, id);
+			//CallableStatement cs = connection
+			//		.prepareCall("{call citdebtor(?)}");
+			//cs.setInt(1, id);
 			// ps = connection.prepareStatement(sql);
-			rs = cs.executeQuery();
+			//rs = cs.executeQuery();
 			PreparedStatement ps3 = connection
 					.prepareStatement("SELECT payerid FROM PayersAccounts  p inner join invoicetransaction t on p.sysid = t.sysacctid where t.sysid = "
 							+ id);

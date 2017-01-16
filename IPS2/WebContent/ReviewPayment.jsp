@@ -11,6 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="ProcessAcctData.*"%>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -213,8 +214,7 @@ String userid = (String)request.getParameter("pyid");
 <td width=60><h3>Payment Amount</h3></td>
 <td><h3>Status</h3></td>
 </tr>
-<%!  String driverName = "net.sourceforge.jtds.jdbc.Driver"; %>
-<%@ include file="connection.jsp" %>
+
 <%
 Connection con = null;
 ResultSet rs =null;
@@ -226,10 +226,13 @@ int payerid=Integer.parseInt(userid);
 try
 {
 	
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
-//String sql = "SELECT t.SysId,InvoicePaymentDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2 FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join debtor d on d.SysId =a.payerId where t.Active =1 and a.PayerId="+payerid + " order by t.SysId";
-//ps = con.prepareStatement(sql);
+Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
+con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+
+Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();	
+
+Debtor d = debtors.get(payerid);
+
 cs = con.prepareCall("exec itdebtor ?");
 cs.setInt(1, payerid);
 rs = cs.executeQuery(); 
@@ -238,7 +241,7 @@ while (rs.next()){
 %>
 <tr><td><input type="radio" name="check" value=<%=rs.getString("SysId") %>></td>
 <td><h6><%= rs.getString("SysId") %></h6></td>
-<td><h6><%String name= rs.getString("Name1") + " " +rs.getString("Name2") ; 
+<td><h6><%String name= d.getName1() + " " + d.getName2(); 
 if (name.length()>32)
 {name=name.substring(0,31);}
 %><%=name%></h6></td>

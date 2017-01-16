@@ -89,7 +89,8 @@ public class DeletedInvoice extends HttpServlet {
 			// database
 			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
 			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			
 			response.setContentType("application/pdf"); // Code 1
 			// response.setHeader("Content-Disposition ,filename=\"" +
 			// "text.pdf" + "\"");
@@ -133,7 +134,7 @@ public class DeletedInvoice extends HttpServlet {
 			String debtor = "";
 			// String invId;
 			
-			Map<String,Debtor> debtors = DBClientDebtorService.getInstance().getDebtors();			
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();			
 			while (rs.next()) {
 				String payerId = rs.getString("payerid");
 				Debtor d = debtors.get(payerId);
@@ -290,24 +291,24 @@ public class DeletedInvoice extends HttpServlet {
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
-				// table.addCell(String.valueOf(id));
-				// table.addCell("Amount");
-
-				// c = new PdfPCell(new
-				// Paragraph(rs.getString("SysId"),cambrial9));
-				// c.setBorder(Rectangle.NO_BORDER);
-				// table.addCell(c);
-
-				// name="clientid" + counter;
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+		
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
