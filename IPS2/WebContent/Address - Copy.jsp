@@ -12,7 +12,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
-<%@page import="ProcessAcctData.*"%>
+<%@ page import="com.ips.database.*"%>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -23,18 +23,18 @@
     </head>  
     <body>
  
-<%@ include file="connection.jsp" %>
+
      <%  
       String area = request.getParameter("accountId");  
      String ftype = request.getParameter("accountId");  
         response.setContentType("text/html");  
-        response.setHeader("Cache-Control", "no-cache");  
+        response.setHeader("Cache-Control", "no-cache");
+        Connection con = null;
         try {  
             String buffer = "<div>";  
-        	Class.forName(DBProperties.JDBC_SYBASE10_DRIVER);
-        	// con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-        	Connection con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
-
+        	
+            
+            con = FactorDBService.getInstance().openConnection();
             //Connection con = ConnectionManager.getConnection();  
             Statement stmt = con.createStatement();  
             String query = "Select f.Flat_No,a.Building_Name,t.Flat_Type from tblflat f,tblarea a,tblflattype t where f.Area_Code=a.Area_Code AND f.Flat_Code=t.Flat_Code AND f.Status ='"+ftype+"' AND Area_Name='" + area + "'";  
@@ -50,7 +50,9 @@
             response.getWriter().println(buffer);  
         } catch (Exception e) {  
             response.getWriter().println(e);  
-        }  
+        }  finally {
+        	FactorDBService.getInstance().releaseConnection(con);
+        }
         %>  
     </body>  
 </html>  

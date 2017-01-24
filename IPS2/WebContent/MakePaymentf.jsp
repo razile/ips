@@ -11,6 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@page import="com.ips.database.*"%>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -502,9 +503,8 @@ String userid = (String)request.getParameter("pyid"); //(String)session.getAttri
 <%@include file='headerf.jsp'%>
 <%@include file='sidebarf.jsp'%>
 <form name="makePayment" id="form" action="InvoicePaymentf" method="post">
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@ include file="connection.jsp" %>
+
 <div id="fake_box">
 	</div>
 
@@ -529,8 +529,7 @@ int  payerid=Integer.parseInt(userid);
 try
 {
 	
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+con = SqlServerDBService.getInstance().openConnection();
 String sql = "SELECT SysId,AccountNumber,CurrencyType FROM PayersAccounts p where p.Active=1 and p.PayerId="+payerid;
 ps = con.prepareStatement(sql);
 rs = ps.executeQuery(); 
@@ -547,7 +546,9 @@ String act = request.getParameter("check");
 }//while
   }
 catch(Exception e){}
-finally{}
+finally{
+	SqlServerDBService.getInstance().releaseConnection(con);
+}
 %>
 </select></td><td style="height:20px"></td></tr>
 </table></td>

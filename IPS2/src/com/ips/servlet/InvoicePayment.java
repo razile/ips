@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
@@ -25,6 +25,12 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Document;
@@ -91,11 +97,12 @@ public class InvoicePayment extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		
+		Connection connection = null;
 		try {
 			
-			Connection connection = null;
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+			connection = SqlServerDBService.getInstance().openConnection();
+			
 			Map<String,Client> clients = FactorDBService.getInstance().getClients();
 			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
 			String accountid = request.getParameter("account");
@@ -318,17 +325,18 @@ public class InvoicePayment extends HttpServlet {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> debtors){
+	Connection connection = null;
 	try{
 		String from = "webserver@invoicepayment.ca";
 		String to2 = "Youssef.shatila@systembind.com";
-		Connection connection = null;
 		
-		Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-		connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-			
+		connection = SqlServerDBService.getInstance().openConnection();
+		
 		CallableStatement cs = connection.prepareCall("exec citdebtor ?");
 		cs.setInt(1, Integer.parseInt(id));
 		ResultSet rs = cs.executeQuery();
@@ -383,17 +391,17 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 	    // mimeMessage.setRecipients(Message.RecipientType.CC,InternetAddress.parse("ali@invoicepayment.ca"));
 	    mimeMessage.setContent(content,"text/html");
 	    Transport.send(mimeMessage);
+	} catch(Exception e) {
+		e.printStackTrace();
+	} finally {
+		SqlServerDBService.getInstance().releaseConnection(connection);
 	}
-	catch(Exception e){
-	}	
 }
 	public void SavePDF(int transId, Map<String,Client> clients, Map<String,Debtor> debtors) {
 	
 		Connection connection = null;
 		try {
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-				
+			connection = SqlServerDBService.getInstance().openConnection();
 			
 			Document document = new Document();
 			String id = transId + "";

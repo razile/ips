@@ -4,7 +4,7 @@
 <%@page import="java.util.*,java.sql.*,java.io.*" %>
 <%@page import="javax.servlet.*" %>
 <%@page import="javax.servlet.http.*" %>
-<%@page import="ProcessAcctData.*"%>
+<%@page import="com.ips.database.*"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -14,19 +14,17 @@
 <title></title>
 </head>
 <body>
-<%! Connection con; 
-    Connection con1; %>
+
 <%! PreparedStatement ps; %>
 <%! ResultSet rs; %>
-<%@ include file="connection.jsp" %>
+
 
 <% String accid=request.getParameter("str");
 String pid=request.getParameter("pid");
-
+Connection con, con1;
 try{
-Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+	con = SqlServerDBService.getInstance().openConnection();
+    con1 = FactorDBService.getInstance().openConnection();
 
 
 String sql = "SELECT SysId,TransitNumber,BranchCode,AccountNumber,CurrencyType FROM PayersAccounts pa where pa.SysId="+accid;
@@ -96,8 +94,10 @@ $&nbsp;<input type=text width=100px name="totalPayment" id="totalPayment" class=
 <%}
   }
 catch(Exception e){ e.printStackTrace(); }
-finally{con.close();
-        con1.close();}
+finally{
+	SqlServerDBService.getInstance().releaseConnection(con);
+	FactorDBService.getInstance().releaseConnection(con1);     
+}
  %>
 </body>
 </html>

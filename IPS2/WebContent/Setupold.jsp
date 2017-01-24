@@ -82,7 +82,7 @@ var clicked;
 </head>
 <body>
 
-<%@ include file="connection.jsp" %>
+
 	<%
 boolean exist =false;
 	String pid2 = (String) request.getParameter("plog");
@@ -103,9 +103,9 @@ ResultSet rs =null;
 PreparedStatement ps = null;
 try
 {
-Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+	
+con = SqlServerDBService.getInstance().openConnection();	
+con1 = FactorDBService.getInstance().openConnection();
 
 String sql = "select * from PayersAccounts where payerid ="+debtorid;
  ps = con.prepareStatement(sql);
@@ -127,10 +127,10 @@ if(rs2.next()){
 }
 }catch(Exception e){e.printStackTrace();}
 finally{
-	try{
-	con.close();
-	con1.close();}
-	catch (Exception e2){e2.printStackTrace();}
+	
+		SqlServerDBService.getInstance().releaseConnection(con);
+		FactorDBService.getInstance().releaseConnection(con1);
+	
 }
 session.setAttribute( "pyid", debtorid );
 session.setAttribute( "pynm", name );

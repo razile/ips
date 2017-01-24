@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +34,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -87,8 +93,7 @@ public class DeletedInvoice extends HttpServlet {
 			// String connectionURL =
 			// "jdbc:mysql://localhost:3306/ipspayment";// newData is the
 			// database
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+			connection = SqlServerDBService.getInstance().openConnection();
 			Map<String,Client> clients = FactorDBService.getInstance().getClients();
 			
 			response.setContentType("application/pdf"); // Code 1
@@ -372,6 +377,8 @@ public class DeletedInvoice extends HttpServlet {
 			// servletOutputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 
 	}

@@ -1,18 +1,17 @@
-package ProcessAcctData;
+package com.ips.database;
+
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 
 public class FactorDBService {
-
-	private final String connectionURL = "jdbc:sybase:Tds:192.168.10.11:2638/factorsql_dbserver/Factor";
-	private final String username = "admin";
-	private final String password = "adminco";
 	
 	private static FactorDBService instance;
 	
@@ -29,13 +28,34 @@ public class FactorDBService {
 		return instance;
 	}
 	
-	public Map<String,Debtor> getDebtors() throws Exception {
+	public Connection openConnection() {
 		Connection connection = null;
+		try {
+			Class.forName(DBProperties.JDBC_SYBASE10_DRIVER);
+			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return connection;
+	}
+	
+	
+	public void releaseConnection(Connection connection) {
+		try {
+			if (connection != null && !connection.isClosed()) {
+				connection.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public Map<String,Debtor> getDebtors() throws Exception {
 		String  sql = null;
 		Map<String, Debtor> map = new HashMap<String,Debtor>();
+		Connection connection = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(connectionURL, username, password);
+			connection = openConnection();
 	
 			sql = "SELECT sysid, name1, name2, debtorid from Debtor";
 			PreparedStatement ps = connection.prepareStatement(sql);
@@ -57,9 +77,7 @@ public class FactorDBService {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			if (connection != null) {
-				connection.close();
-			}
+			releaseConnection(connection);
 		}
 		return map;
 	}
@@ -70,8 +88,7 @@ public class FactorDBService {
 		String  sql = null;
 		Map<String, Client> map = new HashMap<String,Client>();
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(connectionURL, username, password);
+			connection = openConnection();
 	
 			sql = "SELECT sysid, name1, name2  from Client";
 			PreparedStatement ps = connection.prepareStatement(sql);
@@ -92,9 +109,7 @@ public class FactorDBService {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			if (connection != null) {
-				connection.close();
-			}
+			releaseConnection(connection);
 		}
 		return map;
 	}
@@ -104,8 +119,7 @@ public class FactorDBService {
 		String  sql = null;
 		Invoice i = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(connectionURL, username, password);
+			connection = openConnection();
 	
 			sql = "SELECT invid from Invoice where sysid = ?";
 			PreparedStatement ps = connection.prepareStatement(sql);
@@ -123,9 +137,7 @@ public class FactorDBService {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			if (connection != null) {
-				connection.close();
-			}
+			releaseConnection(connection);
 		}
 		return i;
 	}

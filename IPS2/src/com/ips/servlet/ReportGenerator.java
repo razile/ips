@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -11,6 +11,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -40,13 +45,13 @@ import java.util.Map;
 /**
  * Servlet implementation class ReportGenerator
  */
-public class ReportGeneratorf extends HttpServlet {
+public class ReportGenerator extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public ReportGeneratorf() {
+	public ReportGenerator() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -65,7 +70,6 @@ public class ReportGeneratorf extends HttpServlet {
 	 *      response)
 	 */
 
-
 	int norows = 0;
 
 	protected void doPost(HttpServletRequest request,
@@ -76,11 +80,9 @@ public class ReportGeneratorf extends HttpServlet {
 		try {
 			
 			Map<String,Client> clients = FactorDBService.getInstance().getClients();
-			Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();	
-		
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+			Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();			
 
+			connection = SqlServerDBService.getInstance().openConnection();
 			String dateFrom = request.getParameter("datepickerstart");
 			String dateEnd = request.getParameter("datepickerend");
 			String acctId = request.getParameter("chkAccount");
@@ -143,21 +145,21 @@ public class ReportGeneratorf extends HttpServlet {
 			// int y_line2 = 800;
 			cb.beginText();
 			cb.setFontAndSize(bf_cambria, 14);
-			String text = "Rapport sur les paiements";
+			String text = "Payments Report";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 20;
 			cb.setFontAndSize(bf_cambrial, 10);
 			// text ="Payment Date: " + invoicedate;
-			text = "Nous vous remercions d�avoir utilis� le service de ch�que �lectronique IPS.";
+			text = "Thank you for using the IPS eCheque service.";
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
-			text = "Veuillez imprimer cette page pour vos dossiers.";
+			text = "Please print this page for your records.";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
 			cb.setFontAndSize(bf_cambria, 10);
-			text = "Payeur : ";
+			text = "Payer: ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
@@ -166,15 +168,15 @@ public class ReportGeneratorf extends HttpServlet {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 100, y_line2, 0);
 
 			cb.setFontAndSize(bf_cambria, 10);
-			text = "Exp�diteur Bank Account: ";
+			text = "From Bank Account: ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cb.setFontAndSize(bf_cambrial, 10);
-			text = "       " + account + " " + currency;
+			text = account + " " + currency;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 170, y_line2, 0);
 
 			cb.setFontAndSize(bf_cambria, 10);
-			text = "Du : ";
+			text = "Start Date: ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cb.setFontAndSize(bf_cambrial, 10);
@@ -182,7 +184,7 @@ public class ReportGeneratorf extends HttpServlet {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 120, y_line2, 0);
 
 			cb.setFontAndSize(bf_cambria, 10);
-			text = "Au : ";
+			text = "End Date: ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cb.setFontAndSize(bf_cambrial, 10);
@@ -200,7 +202,7 @@ public class ReportGeneratorf extends HttpServlet {
 			y_line2 = y_line2 - 30;
 
 			if (sortby.equals("byDate")) {
-				text = "Par date :";
+				text = "By Date: ";
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				y_line2 = y_line2 - 2;
@@ -209,11 +211,11 @@ public class ReportGeneratorf extends HttpServlet {
 				cb.lineTo(100, y_line2);
 				cb.stroke();
 				
+				// case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT else Client.Name1 COLLATE DATABASE_DEFAULT end as name1
 				
 				// FACTOR-CLIENT
 				sql = "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount, ip.payee, it.SysId,ip.comments,it.status FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId  where pa.sysid="
 						+ acctId;
-				
 				String declined = request.getParameter("declined");
 				String status = "(";
 				boolean useStatus = false;
@@ -241,7 +243,7 @@ public class ReportGeneratorf extends HttpServlet {
 				table.writeSelectedRows(0, -1, 60, y_line2, cb);
 
 			} else {
-				text = "Par Fournisseur :";
+				text = "By Supplier:";
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				y_line2 = y_line2 - 2;
@@ -264,7 +266,6 @@ public class ReportGeneratorf extends HttpServlet {
 					// sql = sql +" and it.InvoiceDate < '"+ dateEnd2 +"' ";
 				}
 
-			
 				CallableStatement cs3 = connection
 						.prepareCall("exec ippaclient ?,?,?");
 				cs3.setString(1, payerid);
@@ -272,7 +273,6 @@ public class ReportGeneratorf extends HttpServlet {
 				cs3.setString(3, dateEnd2);
 				ResultSet rs3 = cs3.executeQuery();
 				while (rs3.next()) {
-					
 					String payee = rs3.getString("payee");
 					Client c = clients.get(payee);
 					
@@ -321,11 +321,7 @@ public class ReportGeneratorf extends HttpServlet {
 			// pw2.println(errors.toString());
 			e.printStackTrace();
 		} finally {
-			try {
-				if (connection != null)
-					connection.close();
-			} catch (Exception e) {
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 
@@ -336,10 +332,7 @@ public class ReportGeneratorf extends HttpServlet {
 		norows = 0;
 		PdfPTable table = null;
 		try {
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-				
-
+			connection = SqlServerDBService.getInstance().openConnection();
 			int columns = 0;
 			if (showDebtor) {
 				columns = 7;
@@ -374,7 +367,7 @@ public class ReportGeneratorf extends HttpServlet {
 
 			table.addCell(c);
 
-			p = new Paragraph("N� de facture", cambria9);
+			p = new Paragraph("Invoice No.", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
@@ -382,7 +375,7 @@ public class ReportGeneratorf extends HttpServlet {
 
 			table.addCell(c);
 			if (showDebtor) {
-				p = new Paragraph("Fournisseur", cambria9);
+				p = new Paragraph("Supplier", cambria9);
 				p.setFont(cambria9);
 
 				c = new PdfPCell(p);
@@ -391,7 +384,7 @@ public class ReportGeneratorf extends HttpServlet {
 
 				table.addCell(c);
 			}
-			p = new Paragraph("Montant", cambria9);
+			p = new Paragraph("Amount", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
@@ -402,19 +395,19 @@ public class ReportGeneratorf extends HttpServlet {
 			 * p.setFont(cambria9); c = new PdfPCell (p);
 			 * c.setBorder(Rectangle.NO_BORDER); table.addCell(c);
 			 */
-			p = new Paragraph("Montant du paiement", cambria9);
+			p = new Paragraph("Payment Amount", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_CENTER);
 			table.addCell(c);
-			p = new Paragraph("N� de confirmation", cambria9);
+			p = new Paragraph("Confirmation No.", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.
 			table.addCell(c);
-			p = new Paragraph("�tat", cambria9);
+			p = new Paragraph("Status", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
@@ -463,7 +456,8 @@ public class ReportGeneratorf extends HttpServlet {
 
 				table.addCell(c);
 				if (showDebtor) {
-					String payee = rs.getString("payee");
+					
+	            	String payee = rs.getString("payee");
 	            	Client client = clients.get(payee);
 	            	
 	            	String nameToUse = client.getName1();
@@ -533,11 +527,7 @@ public class ReportGeneratorf extends HttpServlet {
 
 		} catch (Exception e) {
 		} finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 		return table;
 

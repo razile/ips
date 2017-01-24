@@ -11,6 +11,8 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="com.ips.database.*"%>
+<%@ page import="com.ips.model.*" %>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -284,9 +286,8 @@ $(document).ready(function() {
 <td><h3>Status</h3></td>
 </tr>
 
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@ include file="connection.jsp" %>
+
 <%
 Connection con = null;
 ResultSet rs =null;
@@ -298,20 +299,24 @@ int payerid=Integer.parseInt(request.getParameter("pyid").toString());
 try
 {
 	
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+	con = SqlServerDBService.getInstance().openConnection();
+	
+	// FACTOR-DEBTOR
+	Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();
+	
 //String sql = "SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2 FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join debtor d on d.SysId =a.payerId where t.Active =1 and a.PayerId="+payerid + " order by t.SysId";
 //ps = con.prepareStatement(sql);
 //PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2 FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join InsuiteSybaseCoreRep.Debtor d  on d.SysId =a.payerId where  InvoiceDate >subtime(now(),'24:0:0') order by t.SysId;"
-PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2 FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join Factor.dbo.Debtor d  on d.SysId =a.payerId where  t.status ='Pending' or t.status ='Submitted'  order by t.SysId desc;");
+PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,a.payerId FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid where  t.status ='Pending' or t.status ='Submitted'  order by t.SysId desc;");
 //ps2.setInt(1, payerid);
 rs = ps2.executeQuery(); 
 int counter =0;
 while (rs.next()){
+	Debtor d = debtors.get(rs.getString("payerId"));
 %>
 <tr><td><input type="radio" name="check" value=<%=rs.getString("SysId") %>></td>
 <td><h6><%= rs.getString("SysId") %></h6></td>
-<td><h6><%String name= rs.getString("Name1") + " " +rs.getString("Name2") ; 
+<td><h6><%String name= d.getName1() + " " + d.getName2() ; 
 if (name.length()>32)
 {name=name.substring(0,31);}
 %><%=name%></h6></td>
@@ -334,7 +339,7 @@ counter +=1;
 }
 catch(Exception e){e.printStackTrace();}
 finally{
-	con.close();
+	SqlServerDBService.getInstance().releaseConnection(con);
 }
 
 %>

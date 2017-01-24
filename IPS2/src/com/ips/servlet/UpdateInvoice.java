@@ -1,7 +1,9 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import javax.servlet.ServletException;
@@ -9,8 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
+import com.ips.database.DBProperties;
+import com.ips.database.SqlServerDBService;
+
 
 /**
  * Servlet implementation class UpdateInvoice
@@ -47,9 +50,8 @@ public class UpdateInvoice extends HttpServlet {
 		try {
 			String act = request.getParameter("act");
 			
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-				
+			connection = SqlServerDBService.getInstance().openConnection();	
+			
 			if (act.equals("update")) {
 				int counter = Integer.parseInt(request.getParameter("counter"));
 				int loop = 0;
@@ -88,10 +90,7 @@ public class UpdateInvoice extends HttpServlet {
 			}
 		} catch (Exception e) {
 		} finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 		javax.servlet.ServletContext context = getServletContext();
 

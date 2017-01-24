@@ -3,6 +3,7 @@
 <%@page import="java.util.*,java.sql.*,java.io.*" %>
 <%@page import="javax.servlet.*" %>
 <%@page import="javax.servlet.http.*" %>
+<%@page import="com.ips.database.*"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -15,14 +16,17 @@
 <%! Connection con; %>
 <%! PreparedStatement ps; %>
 <%! ResultSet rs; %>
-<%@ include file="connection.jsp" %>
 
-<% String accid=request.getParameter("str");%>
-<%  String driverName = "net.sourceforge.jtds.jdbc.Driver";
+
+<% String accid=request.getParameter("str"); %>
+
+<%
 try{
-Class.forName(driverName);
+
 String acct = request.getParameter("acct");
-con = DriverManager.getConnection(url,user,psw);
+
+con = SqlServerDBService.getInstance().openConnection();
+
 if (acct!=null && acct.length()>0){
 String sql = "SELECT SysId FROM PayersAccounts pa where  pa.AccountNumber='" + acct + "'";
 ps = con.prepareStatement(sql);
@@ -49,7 +53,7 @@ if (rs.next())
 catch(Exception e)
 { e.printStackTrace();}
 finally{
-con.close();
+SqlServerDBService.getInstance().releaseConnection(con);
 }
 %>
 </body>

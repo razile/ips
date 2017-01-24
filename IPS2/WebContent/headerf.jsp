@@ -6,7 +6,7 @@
 <%@ page import="java.util.Calendar"%>
 <%@ page import="javax.servlet.http.*"%>
 <%@ page import="javax.servlet.*"%>
-<%@ page import="ProcessAcctData.*" %>
+<%@ page import="com.ips.database.*" %>
 
     
 <% 
@@ -16,14 +16,12 @@ if (plog == null)plog= (String)request.getAttribute("pyid");
 // if (plog==null) plog= userid;
 String pnam = "";
 String piid = plog;
-Connection con2 = null;
+Connection conhf = null;
 
-Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-//con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-Connection con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
+conhf = FactorDBService.getInstance().openConnection();
 
 String sql23 = "select debtorid from Debtor where sysid ='" + piid+"'";
-PreparedStatement ps3  = con1.prepareStatement(sql23);
+PreparedStatement ps3  = conhf.prepareStatement(sql23);
 ResultSet rs3 = ps3.executeQuery();
 String debtrid = null;
 if(rs3.next()){
@@ -39,8 +37,8 @@ PreparedStatement s=null;
 ResultSet rs2 =null;
 try{
 	//String sql22="SELECT Fac.DebtorId as 'dbid', Fac.Name1 + ' ' + Fac.Name2 as 'dbname',Deb.Password as 'dbpass', isnull(Deb.NewClient,'Y') as 'clnt' FROM dbo.Debtor Deb JOIN Factor.dbo.Debtor Fac ON Deb.OldDebtor_PK = Fac.SysId WHERE Fac.DebtorId =?";
-	String sql22="SELECT DebtorId as 'dbid', Name1 as 'dbname', Status FROM DBA.Debtor where DebtorId=?;";
- 	s = consyb.prepareStatement(sql22);
+	String sql22="SELECT DebtorId as 'dbid', Name1 as 'dbname', Status FROM Debtor where DebtorId=?;";
+ 	s = conhf.prepareStatement(sql22);
  	s.setString(1,debtrid);
  	rs2 = s.executeQuery();
  	while (rs2.next()) {
@@ -55,8 +53,7 @@ try{
 	finally{
 		s.close();
  		//rs2.close();
- 		con1.close();
- 		//con33.close();	
+ 		FactorDBService.getInstance().releaseConnection(conhf);	
  		}
 	//=============================================================
  

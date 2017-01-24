@@ -11,7 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
-<%@page import="ProcessAcctData.*"%>
+
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>

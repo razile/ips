@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 //import net.sourceforge.jtds.jdbc.Driver;
 
+import com.ips.database.DBProperties;
+import com.ips.database.SqlServerDBService;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,15 +25,15 @@ import java.io.*;
 //import com.mysql.jdbc.PreparedStatement;
 
 /**
- * Servlet implementation class ProcessAcct French
+ * Servlet implementation class ProcessAcct
  */
-public class ProcessAcctf extends HttpServlet {
+public class ProcessAcct extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public ProcessAcctf() {
+	public ProcessAcct() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -56,22 +59,19 @@ public class ProcessAcctf extends HttpServlet {
 		ServletContext context = getServletContext();
 		String ids = "";
 		String acctid = "";
-
+	
 		String act = request.getParameter("act");
 		String payerId = request.getParameter("PayerId");
 		String sql = "aaa=" + act; // is
+		Connection connection = null;
 		try // the
 			// database
 		{
-			Connection connection = null;
-
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-				
+			connection = SqlServerDBService.getInstance().openConnection();
 
 			sql = "aaab";
 
-			if (act.equals("Mettre � jour") || act.equals("Update")) {
+			if (act.equals("Add") || act.equals("Update")) {
 				sql = "bbb";
 				acctid = request.getParameter("AcctId");
 
@@ -147,7 +147,7 @@ public class ProcessAcctf extends HttpServlet {
 					connection.close();
 					testline = 6;
 				}
-			} else if (act.equals("Modifier")) {
+			} else if (act.equals("Edit")) {
 				response.setContentType("text/html");
 				PrintWriter pw = response.getWriter();
 				String actId = request.getParameter("AcctId");
@@ -165,8 +165,8 @@ public class ProcessAcctf extends HttpServlet {
 			// pw2.println("pyid="+payerId);
 			// String path = context.getInitParameter("IPS2Path").toString();
 			request.setAttribute("pyid", payerId.toString());
-			request.getRequestDispatcher("ManageAccountsf.jsp").forward(
-					request, response);
+			request.getRequestDispatcher("ManageAccounts.jsp").forward(request,
+					response);
 		}
 
 		catch (Exception e) {
@@ -185,6 +185,8 @@ public class ProcessAcctf extends HttpServlet {
 			pw2.println("class=" + act + "=" + ids + "=" + testline + "SQL="
 					+ sql + "Payerid=" + payerId);
 			pw2.println(errors.toString());
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 
 	}

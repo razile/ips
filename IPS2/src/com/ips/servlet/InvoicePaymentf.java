@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -34,6 +34,8 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
+import com.ips.database.DBProperties;
+import com.ips.database.SqlServerDBService;
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Document;
@@ -113,9 +115,8 @@ public class InvoicePaymentf extends HttpServlet {
 			int id = 0;
 			int counter = 0;
 			
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-		
+			connection = SqlServerDBService.getInstance().openConnection();
+			
 			acctid = request.getParameter("AcctId");
 			String invNo = request.getParameter("invoiceNumber");
 			String payee = request.getParameter("payee");
@@ -325,6 +326,8 @@ public class InvoicePaymentf extends HttpServlet {
 			// e.printStackTrace(new PrintWriter(errors));
 			// pw2.println(errors.toString());
 			// e.printStackTrace();
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 }

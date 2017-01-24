@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
@@ -39,6 +39,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -107,10 +113,8 @@ public class ReviewPayment extends HttpServlet {
 			Map<String,Client> clients = FactorDBService.getInstance().getClients();
 			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
 			
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-
-
+			connection = SqlServerDBService.getInstance().openConnection();
+			
 			javax.servlet.ServletContext context = null;
 			context = sc;
 			String email1 = "";
@@ -313,11 +317,7 @@ public class ReviewPayment extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				connection.close();
-			} catch (Exception e2) {
-				e2.printStackTrace();
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 		// request.getRequestDispatcher("/ReviewPayment.jsp").forward(request,
 		// response);

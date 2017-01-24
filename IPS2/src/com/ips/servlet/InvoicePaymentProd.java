@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 
 import java.awt.Color;
@@ -36,6 +36,12 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Document;
@@ -97,21 +103,21 @@ public class InvoicePaymentProd extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		 try{
+		 
+		Connection connection=null;
+		try{
 			    
 				
-				Connection connection=null;
-				Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-				connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-				Map<String,Client> clients = FactorDBService.getInstance().getClients();
-				Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
-			 	String accountid = request.getParameter("account");
-			 	String totalpayment = request.getParameter("totalPayment");
-			 	totalpayment = totalpayment.substring(1);
-				totalpayment = totalpayment.replaceAll(",", "");
-			 	String currency = request.getParameter("currency");
-			 	String refreshData= request.getParameter("refreshData");
-			 	String x="0";
+			connection = SqlServerDBService.getInstance().openConnection();
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
+		 	String accountid = request.getParameter("account");
+		 	String totalpayment = request.getParameter("totalPayment");
+			totalpayment = totalpayment.substring(1);
+			totalpayment = totalpayment.replaceAll(",", "");
+		 	String currency = request.getParameter("currency");
+		 	String refreshData= request.getParameter("refreshData");
+		 	String x="0";
 			 String  path = "MakePayment.jsp"; 
 		     String sql11 = "select count(*) as counter from invoicetransaction where invoiceAmount=? and Currencytype=?  and sysAcctId=? and invoicePaymentDate > DATEADD(minute, -20, GETDATE())";
 		     PreparedStatement ps11 = connection.prepareStatement(sql11); 
@@ -311,17 +317,18 @@ public class InvoicePaymentProd extends HttpServlet {
 		 }
 	     catch(Exception e)
 	     { e.printStackTrace();
+		 } finally {
+			 SqlServerDBService.getInstance().releaseConnection(connection);
 		 }
 	}
 	public void SendEmail(String id,String totalPaymentOriginal, Map<String, Debtor> debtors){
+	
+		Connection connection = null;	
 	try{
 		String from = "webserver@invoicepayment.ca";
 		String to2 = "Youssef.shatila@systembind.com";
-		Connection connection = null;
 		
-		Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-		connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-			
+		connection = SqlServerDBService.getInstance().openConnection();
 		CallableStatement cs = connection.prepareCall("exec citdebtor ?");
 		cs.setInt(1, Integer.parseInt(id));
 		ResultSet rs = cs.executeQuery();
@@ -378,16 +385,15 @@ public class InvoicePaymentProd extends HttpServlet {
 	    Transport.send(mimeMessage);
 	}
 	catch(Exception e){
-	}	
+	}	finally {
+		SqlServerDBService.getInstance().releaseConnection(connection);
+	}
 }
 	public void SavePDF(int transId, Map<String,Client> clients, Map<String,Debtor> debtors) {
 		
 		Connection connection = null;
 		try {
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-				
-			
+			connection = SqlServerDBService.getInstance().openConnection();
 			Document document = new Document();
 			String id = transId + "";
 			BaseFont bf_courier = BaseFont.createFont(BaseFont.COURIER,
@@ -690,6 +696,8 @@ public class InvoicePaymentProd extends HttpServlet {
 			// StringWriter errors = new StringWriter();
 			// e.printStackTrace(new PrintWriter(errors));
 			// pw2.println(errors.toString());
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}	
 }

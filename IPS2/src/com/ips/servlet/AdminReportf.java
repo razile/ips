@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -10,6 +10,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -24,9 +29,6 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
-import java.sql.CallableStatement;
-
-//import com.mysql.jdbc.Connection;
 
 import java.sql.ResultSet;
 import java.text.NumberFormat;
@@ -74,9 +76,7 @@ public class AdminReportf extends HttpServlet {
 			Map<String, Client> clients = FactorDBService.getInstance().getClients();
 			Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();
 
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL,
-					DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
+			connection = SqlServerDBService.getInstance().openConnection();
 
 			String dateFrom = request.getParameter("datepickerstart");
 			String dateEnd = request.getParameter("datepickerend");
@@ -265,11 +265,7 @@ public class AdminReportf extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				if (connection != null)
-					connection.close();
-			} catch (Exception e) {
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 
@@ -278,9 +274,8 @@ public class AdminReportf extends HttpServlet {
 		norows = 0;
 		PdfPTable table = null;
 		try {
-			Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-			connection = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-
+			connection = SqlServerDBService.getInstance().openConnection();
+		
 			int columns = 0;
 			if (showDebtor) {
 				columns = 8;
@@ -484,11 +479,7 @@ public class AdminReportf extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			 SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 		return table;
 

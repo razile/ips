@@ -1,21 +1,26 @@
-package ProcessAcctData;
+package com.ips.model;
 
-public class Client {
+public class Debtor {
+
 	private String sysid;
 	private String name1;
 	private String name2;
+	private String debtorId;
 
-	public Client() {
+	public Debtor() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Client(String sysid, String name1, String name2) {
+	
+	public Debtor(String sysid, String name1, String name2, String debtorId) {
 		super();
 		this.sysid = sysid;
 		this.name1 = name1;
 		this.name2 = name2;
+		this.debtorId = debtorId;
 	}
+
 
 	public String getSysid() {
 		return sysid;
@@ -40,7 +45,13 @@ public class Client {
 	public void setName2(String name2) {
 		this.name2 = name2;
 	}
-	
-	
+
+	public String getDebtorId() {
+		return debtorId;
+	}
+
+	public void setDebtorId(String debtorId) {
+		this.debtorId = debtorId;
+	}
 
 }

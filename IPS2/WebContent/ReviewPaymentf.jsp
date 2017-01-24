@@ -11,6 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="com.ips.model.*" %>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -222,10 +223,7 @@ int payerid=Integer.parseInt(userid);
 <% 
 try
 {
-	
-Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-
+con = SqlServerDBService.getInstance().openConnection();
 Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();	
 Debtor d = debtors.get(payerid);
 
@@ -254,7 +252,7 @@ counter +=1;
 }
 catch(Exception e){e.printStackTrace();}
 finally{
-	con.close();
+	SqlServerDBService.getInstance().releaseConnection(con);
 }
 
 %>

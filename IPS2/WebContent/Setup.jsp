@@ -85,16 +85,13 @@ var clicked;
 <%
 String userid = (String)request.getParameter("pyid");
 //userid = CipherData.decipher("01234567",userid);
-if (userid==null)
-{ userid = (String)request.getAttribute("pyid");
-      if (userid==null){
-          userid= (String)request.getParameter("plog");
-		if (userid==null)
-		response.sendRedirect("http://live.invoicepayment.ca/ipspayers/index.htm");
-        }
-}
+if (userid==null) userid = (String)request.getAttribute("pyid");
+if (userid==null) userid= (String)request.getParameter("plog");
+if (userid==null) response.sendRedirect("http://live.invoicepayment.ca/ipspayers/index.htm");
+        
+
 %>
-<%@ include file="connection.jsp" %>
+
 <%@include file='header.jsp'%>
 <form method="post" action="ManageAccounts.jsp"
 		onSubmit="return checkPolicy();">	
@@ -106,8 +103,7 @@ boolean exist =false;
 	ResultSet rs =null;
 	PreparedStatement ps = null;
   
- Class.forName(driverName);
- Connection con =  DriverManager.getConnection(url,user,psw);
+ Connection con = SqlServerDBService.getInstance().openConnection();
  String sql = "select * from PayersAccounts where payerid ="+debtorid;
 try{
  ps = con.prepareStatement(sql);
@@ -118,7 +114,9 @@ if (rs.next())
 }
 }catch(Exception e){
 	e.printStackTrace();	
-}	
+}	finally {
+	SqlServerDBService.getInstance().releaseConnection(con);
+}
 //session.setAttribute( "pyid", debtorid );
 //session.setAttribute( "pynm", name );
 if (debtorid.equals("14148")||debtorid.equals("0014148"))

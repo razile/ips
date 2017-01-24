@@ -4,6 +4,7 @@
 <%@page import="java.util.*,java.sql.*,java.io.*" %>
 <%@page import="javax.servlet.*" %>
 <%@page import="javax.servlet.http.*" %>
+<%@page import="com.ips.database.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -42,13 +43,12 @@ id = id.replace("/","");%>
 <%! PreparedStatement ps; 
     CallableStatement cs;%>
 <%! ResultSet rs; %>
-<%@ include file="connection.jsp" %>
-<%  String driverName = "net.sourceforge.jtds.jdbc.Driver";
+
+<%  
 try{
 	
 	
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+con = SqlServerDBService.getInstance().openConnection();
 //String sql = "SELECT pa.*,Client.name1 FROM invoicepayment pa left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
 cs = con.prepareCall("{call ipclient(?)}");
 cs.setString(1, id);
@@ -71,7 +71,7 @@ while(rs.next()){
                        <% 
                        counter+=1; }%><input type=hidden name="counter" value=<%=counter%>><input type=hidden name="transactionid" value=<%=id%>><% 
 }catch(Exception e){ e.printStackTrace(); }
-finally{con.close();}
+finally{SqlServerDBService.getInstance().releaseConnection(con);}
 %>
 <tr><td colspan=5 style="text-align:right"><input type=submit id="act" name="act" value="update" class="button submit-button" style="color:blue"><input type=submit id="act" name="act" value="cancel" class="button cancel-button" style="color:blue"></td></tr>
                        </table>

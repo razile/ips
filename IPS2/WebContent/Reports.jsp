@@ -83,9 +83,8 @@ String userid = (String)request.getParameter("pyid");
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>	
 <form action="ReportGenerator" target="_blank" id="form" method=post>
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@include file="connection.jsp" %>
+
 <form action="#">
 <%
 int payerid=Integer.parseInt(request.getParameter("pyid").toString());
@@ -93,8 +92,7 @@ Connection con = null;
 PreparedStatement ps = null;
 try
 {
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+con = SqlServerDBService.getInstance().openConnection();
 String sql = "SELECT SysId, AccountNumber,CurrencyType from PayersAccounts  where PayerId="+payerid;
 ps = con.prepareStatement(sql);
 ResultSet rs = ps.executeQuery(); 
@@ -183,7 +181,7 @@ catch(Exception e){
     pw.println(e);  
 	
 }
-finally{con.close();}
+finally{SqlServerDBService.getInstance().releaseConnection(con);}
 
 
 %>

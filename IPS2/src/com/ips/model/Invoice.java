@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.model;
 
 public class Invoice {
 

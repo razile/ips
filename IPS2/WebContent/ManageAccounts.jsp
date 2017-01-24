@@ -11,6 +11,8 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="com.ips.database.*"%>
+
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -271,7 +273,7 @@ if (userid==null)
 </form>  The account will be deleted; however, any existing invoice payments will still be processed, and you will be able to see them as part of your history within the reports. 
 </div>
 
-<%@ include file="connection.jsp" %>
+
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>	
@@ -292,10 +294,8 @@ catch(Exception e){e.printStackTrace();}
 String debtorid=null;
 try
 {
-Class.forName(DBProperties.JDBC_SQLSERVER_DRIVER);
-con = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SQLSERVER_URL, DBProperties.USERNAME_SQLSERVER, DBProperties.PASSWORD_SQLSERVER);
-con1 = (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
-
+	con = SqlServerDBService.getInstance().openConnection();
+    con1 = FactorDBService.getInstance().openConnection();
 
 %>
   
@@ -411,8 +411,8 @@ while(rs.next())
 }
     catch(Exception e){e.printStackTrace();}
     finally{try{
-    	con.close();
-    	con1.close();
+    	SqlServerDBService.getInstance().releaseConnection(con);
+    	FactorDBService.getInstance().releaseConnection(con1);
     }
     catch(Exception e){e.printStackTrace();}
     } 

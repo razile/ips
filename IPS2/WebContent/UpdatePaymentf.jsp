@@ -319,9 +319,9 @@ $("#account").prop("disabled", true);
 <%@include file='headerf.jsp'%>
 <%@include file='sidebarf.jsp'%>
 <form name="makePayment" id="form" action="InvoicePaymentf" method="post" >
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@ include file="connection.jsp" %>
+
+
 
 
 
@@ -348,8 +348,7 @@ String act = "";
 try
 {
 	
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+con = SqlServerDBService.getInstance().openConnection();
 sql = "SELECT SysId,AccountNumber,CurrencyType FROM PayersAccounts p where p.Active=1 and p.PayerId="+payerid;
 ps = con.prepareStatement(sql);
 rs = ps.executeQuery(); 
@@ -405,8 +404,7 @@ if (act!=null)
     <td style="width:150px"><h6>Confirm</h6></td>
      </tr>
 <% CallableStatement cs=null;
-	Class.forName(driverName);
-    con = DriverManager.getConnection(url,user,psw);
+	con = SqlServerDBService.getInstance().openConnection();
     cs = con.prepareCall("{call Get_Invoices(?)}");
     //int pid =Integer.parseInt(String.valueOf(payerid));
     cs.setInt(1, payerid);
@@ -547,20 +545,7 @@ if (act!=null)
  //   System.err.println("SQLException: " + e.getMessage());
 }
 finally {
-   /* if (cs != null) {
-        try {
-            cs.close();
-        } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
-        }
-    }*/
-    if (con != null) {
-        try {
-            con.close();
-        } catch (SQLException e) {e.printStackTrace();
-  //          System.err.println("SQLException: " + e.getMessage());
-        }
-    }
+	SqlServerDBService.getInstance().releaseConnection(con);
 }
 
 %>

@@ -7,6 +7,7 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
+<%@page import="com.ips.database.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -17,9 +18,9 @@
      <table border=0 cellpadding=0 cellspacing=0>
      <tr><td style="height:60px"></td></tr>
      
- <%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@ include file="connection.jsp" %>
+
+
  
  <%!
  public String colorMe (String stat){
@@ -57,8 +58,7 @@ ResultSet rs =null;
 PreparedStatement ps = null;
 CallableStatement cs = null;
 try {
-	Class.forName(driverName);
- con = DriverManager.getConnection(url,user,psw);
+con = SqlServerDBService.getInstance().openConnection();
  String sql ="select currencytype from PayersAccounts where sysid = " + aid;
   ps = con.prepareStatement(sql);
  rs = ps.executeQuery();
@@ -258,13 +258,8 @@ finally {
             System.err.println("SQLException: " + e.getMessage());
         }
     }
-    if (con != null) {
-        try {
-            con.close();
-        } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
-        }
-    }
+    SqlServerDBService.getInstance().releaseConnection(con);
+    
 }
 
 
