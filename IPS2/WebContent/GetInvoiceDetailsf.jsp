@@ -6,6 +6,7 @@
 <%@page import="javax.servlet.http.*" %>
 <%@ page import="java.text.NumberFormat"%>
 <%@page import="com.ips.database.*"%>
+<%@ page import="com.ips.model.*" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -32,24 +33,30 @@ id = id.replace("/","");%>
 <%  
 try{
 	
-	
+Map<String,Client> clients = FactorDBService.getInstance().getClients();	
 con = SqlServerDBService.getInstance().openConnection();
 //String sql = "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
 //int pid =Integer.parseInt(String.valueOf(payerid));
-cs = con.prepareCall("{call ipclient(?)}");
+cs = con.prepareCall("{call ipclient_m(?)}");
 cs.setString(1,id );
 rs = cs.executeQuery(); 
 while(rs.next()){
 	 NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
      Double d = Double.parseDouble(rs.getString("Amount") ) ;
-		   String amt = fmt.format(d);
-		   d = Double.parseDouble(rs.getString("PaymentAmount") ) ;
-		   String pamt = fmt.format(d);
+	 String amt = fmt.format(d);
+	 d = Double.parseDouble(rs.getString("PaymentAmount") ) ;
+	 String pamt = fmt.format(d);
+	 String name1 = null;
+	 String payee = rs.getString("payee");
+	 Client cl = clients.get(payee);
+	 if (cl != null) {
+		 name1= cl.getName1();
+	 }
 %>
  
                         <tr>
                          <td style="text-align:center"><h3 style="text-align:center"><%=rs.getString("InvoiceNumber") %></h3></td>
-                         <td><h3><%=(rs.getString("name1")==null)?rs.getString("Payeeextra"):rs.getString("name1") %></h3></td>
+                         <td><h3><%=(name1==null)?rs.getString("Payeeextra"):name1 %></h3></td>
                          <td class="rightJustified"><h3 style="text-align:right"><%=amt %></h3></td>
                          <td class="rightJustified"><h3 style="text-align:right"><%=pamt %></h3></td>
                        </tr>

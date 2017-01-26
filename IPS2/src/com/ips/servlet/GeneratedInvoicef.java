@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.awt.Color;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.SQLException;
 import java.sql.Connection;
 import javax.servlet.ServletConfig;
@@ -192,7 +192,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			PreparedStatement ps = null;
 			// String sql =
 			// "SELECT d.Name1 , d.Name2, d.DebtorId,i.InvoiceDate,i.InvoiceAmount,a.AccountNumber,a.CurrencyType FROM Debtor d join PayersAccounts a on a.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = a.SysId where i.SysId="+id;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			// ps = connection.prepareStatement(sql);
 			rs = cs.executeQuery();
@@ -339,7 +339,7 @@ public class GeneratedInvoicef extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();

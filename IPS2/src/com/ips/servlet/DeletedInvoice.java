@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -289,7 +288,7 @@ public class DeletedInvoice extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			CallableStatement cs = connection.prepareCall("{call ipclient(?)}");
+			CallableStatement cs = connection.prepareCall("{call ipclient_m(?)}");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(invId));
 			rs = cs.executeQuery();

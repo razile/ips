@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.Color;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.Connection;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletOutputStream;
@@ -148,7 +148,7 @@ public class GeneratedInvoice extends HttpServlet {
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 			String totalpaymentoriginal = null;
@@ -259,7 +259,7 @@ public class GeneratedInvoice extends HttpServlet {
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 			table.addCell(c);
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			while (rs.next()) {

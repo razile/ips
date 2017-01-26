@@ -5,6 +5,7 @@
 <%@page import="javax.servlet.*" %>
 <%@page import="javax.servlet.http.*" %>
 <%@page import="com.ips.database.*"%>
+<%@ page import="com.ips.model.*" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -49,19 +50,22 @@ try{
 	
 	
 con = SqlServerDBService.getInstance().openConnection();
+Map<String,Client> clients = FactorDBService.getInstance().getClients();
 //String sql = "SELECT pa.*,Client.name1 FROM invoicepayment pa left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-cs = con.prepareCall("{call ipclient(?)}");
+cs = con.prepareCall("{call ipclient_m(?)}");
 cs.setString(1, id);
 //ps = con.prepareStatement(sql);
 rs = cs.executeQuery(); 
 
 int counter=0;
 while(rs.next()){
+	String payee = rs.getString("payee");
+	Client cl = clients.get(payee);
 %>
  
                         <tr>
                          <td><h3><%=rs.getString("InvoiceNumber") %></h3></td>
-                         <td><h3><%= (rs.getString("name1")==null)?rs.getString("payee"):rs.getString("name1") %></h3></td>
+                         <td><h3><%= (cl==null)?payee:cl.getName1() %></h3></td>
                          <td><h3>$<%=rs.getString("Amount") %></h3></td>
                          <td><h3><%=rs.getInt("Amount")-rs.getInt("PaymentAmount") %></h3></td>
                          <td><h3>$<input type="text"  style="width:50px" name="paymentamount<%=counter%>" value=<%=rs.getString("PaymentAmount") %>>

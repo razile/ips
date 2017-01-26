@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -337,7 +337,7 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 		
 		connection = SqlServerDBService.getInstance().openConnection();
 		
-		CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+		CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 		cs.setInt(1, Integer.parseInt(id));
 		ResultSet rs = cs.executeQuery();
 		String totalpaymentoriginal = null;
@@ -467,7 +467,7 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 			String totalpaymentoriginal = null;
@@ -578,7 +578,7 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 			table.addCell(c);
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			while (rs.next()) {

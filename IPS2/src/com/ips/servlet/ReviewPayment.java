@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Connection;
@@ -377,7 +377,7 @@ public class ReviewPayment extends HttpServlet {
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 
@@ -479,21 +479,21 @@ public class ReviewPayment extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Factor.dbo.Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			cs = connection.prepareCall("{call ipclient(?)}");
+			cs = connection.prepareCall("{call ipclient_m(?)}");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
-				String payee = rs.getString("payeeextra");
+				String payee = rs.getString("payee");
 				String invoicenumber = rs.getString("invoicenumber");
 				Client cl = clients.get(payee);
 				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
 				
 				String name = null;
 				if (cl == null || cl.getName1() == null) {
-					name = payee;
+					rs.getString("payeeextra");
 				} else {
 					name = cl.getName1();
 				}
@@ -621,7 +621,7 @@ public class ReviewPayment extends HttpServlet {
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 
@@ -723,7 +723,7 @@ public class ReviewPayment extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Factor.dbo.Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
@@ -1396,21 +1396,21 @@ public class ReviewPayment extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			CallableStatement cs = con.prepareCall("exec ipclient ?");
+			CallableStatement cs = con.prepareCall("exec ipclient_m ?");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(invId));
 			rs = cs.executeQuery();
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
-				String payee = rs.getString("payeeextra");
+				String payee = rs.getString("payee");
 				String invoicenumber = rs.getString("invoicenumber");
 				Client cl = clients.get(payee);
 				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
 				
 				String name = null;
 				if (cl == null || cl.getName1() == null) {
-					name = payee;
+					name = rs.getString("payeeextra");
 				} else {
 					name = cl.getName1();
 				}

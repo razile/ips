@@ -3,13 +3,7 @@ package com.ips.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.Map;
-import com.ips.model.Client;
-import com.ips.model.Debtor;
-import com.ips.model.Invoice;
+
 
 public class SqlServerDBService {
 	

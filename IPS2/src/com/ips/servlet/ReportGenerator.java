@@ -1,7 +1,7 @@
 package com.ips.servlet;
 
 import java.io.IOException;
-import java.sql.DriverManager;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Connection;
@@ -267,7 +267,7 @@ public class ReportGenerator extends HttpServlet {
 				}
 
 				CallableStatement cs3 = connection
-						.prepareCall("exec ippaclient ?,?,?");
+						.prepareCall("exec ippaclient_m ?,?,?");
 				cs3.setString(1, payerid);
 				cs3.setString(2, dateFrom);
 				cs3.setString(3, dateEnd2);

@@ -86,7 +86,6 @@ try
 {
 
 con1 = FactorDBService.getInstance().openConnection();
-// (Connection) DriverManager.getConnection(DBProperties.CONNECTION_SYBASE10_URL, DBProperties.USERNAME_SYBASE10, DBProperties.PASSWORD_SYBASE10);
 int payerId=Integer.parseInt(session.getAttribute("pyid").toString());
 String sql = "SELECT Name1,DebtorId,street1,street2,city,state,country,zip from Debtor join Address on Address.SysParentId = Debtor.SysId where Address.ParentTable='DEBTOR' and Debtor.SysId="+payerId;
 ps = con1.prepareStatement(sql);
