@@ -306,7 +306,7 @@ try
 	
 //String sql = "SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2 FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join debtor d on d.SysId =a.payerId where t.Active =1 and a.PayerId="+payerid + " order by t.SysId";
 //ps = con.prepareStatement(sql);
-//PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,d.Name1,d.Name2 FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid join InsuiteSybaseCoreRep.Debtor d  on d.SysId =a.payerId where  InvoiceDate >subtime(now(),'24:0:0') order by t.SysId;"
+
 PreparedStatement ps2  = con.prepareStatement("SELECT t.SysId,InvoiceDate,AccountNumber,a.currencyType,invoiceamount,t.status,a.payerId FROM invoicetransaction  t join PayersAccounts a on a.sysid = t.sysacctid where  t.status ='Pending' or t.status ='Submitted'  order by t.SysId desc;");
 //ps2.setInt(1, payerid);
 rs = ps2.executeQuery(); 

@@ -316,14 +316,11 @@ try
 		
 		Debtor d = debtors.get(spayerid);
 		
-		CallableStatement cs2 = con.prepareCall("exec Get_Emails ? ");
-	    cs2.setString(1, spayerid);
-	    rs2 = cs2.executeQuery();
-	    while (rs2.next()){
-	    	email1=rs2.getString("ContactEMail");
-	       	email2=rs2.getString("Contact2EMail");
-	       	//name =rs.getString("name1") + " " + rs.getString("name2");
-	       	}
+		
+		Debtor dcont = FactorDBService.getInstance().getEmails(spayerid);
+		email1 = d.getContactEmail();
+		email2 = d.getContact2Email();
+				
 			%>
 		<tr>
 <%        String newEmail = rs.getString("newEmail");

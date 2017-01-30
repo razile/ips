@@ -6,6 +6,8 @@ public class Debtor {
 	private String name1;
 	private String name2;
 	private String debtorId;
+	private String contactEmail;
+	private String contact2Email;
 
 	public Debtor() {
 		super();
@@ -53,5 +55,27 @@ public class Debtor {
 	public void setDebtorId(String debtorId) {
 		this.debtorId = debtorId;
 	}
+
+
+	public String getContactEmail() {
+		return contactEmail;
+	}
+
+
+	public void setContactEmail(String contactEmail) {
+		this.contactEmail = contactEmail;
+	}
+
+
+	public String getContact2Email() {
+		return contact2Email;
+	}
+
+
+	public void setContact2Email(String contact2Email) {
+		this.contact2Email = contact2Email;
+	}
+	
+	
 
 }

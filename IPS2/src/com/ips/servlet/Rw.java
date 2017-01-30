@@ -161,15 +161,10 @@ public class Rw extends HttpServlet {
 					client = client.substring(0, client.length() - 2);
 				}
 
-				CallableStatement cs = connection
-						.prepareCall("exec Get_Emails ? ");
-				cs.setString(1, payerid);
-				rs = cs.executeQuery();
-				while (rs.next()) {
-					email1 = rs.getString("ContactEMail");
-					email2 = rs.getString("Contact2EMail");
-					name = rs.getString("name1") + " " + rs.getString("name2");
-				}
+				Debtor d = FactorDBService.getInstance().getEmails(payerid);
+				email1 = d.getContactEmail();
+				email2 = d.getContact2Email();
+				name= d.getName1() + " " + d.getName2();
 				// if (path.length()>0){
 				// path = "/" + path;}
 				// path = path + "/BackendReview.jsp";
@@ -227,15 +222,10 @@ public class Rw extends HttpServlet {
 					client = client.substring(0, client.length() - 2);
 				}
 
-				CallableStatement cs = connection
-						.prepareCall("exec Get_Emails ? ");
-				cs.setString(1, payerid);
-				rs = cs.executeQuery();
-				while (rs.next()) {
-					email1 = rs.getString("ContactEMail");
-					email2 = rs.getString("Contact2EMail");
-					name = rs.getString("name1") + " " + rs.getString("name2");
-				}
+				Debtor d = FactorDBService.getInstance().getEmails(payerid);
+				email1 = d.getContactEmail();
+				email2 = d.getContact2Email();
+				name= d.getName1() + " " + d.getName2();
 				// if (path.length()>0){
 				// path = "/" + path;}
 				path = "BackendReview.jsp";

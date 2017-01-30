@@ -8,6 +8,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@page import="com.ips.database.*"%>
+<%@ page import="com.ips.model.*" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -54,7 +55,7 @@
 Connection con = null;
 ResultSet rs =null;
 PreparedStatement ps = null;
-CallableStatement cs = null;
+
 try {
 
 	con = SqlServerDBService.getInstance().openConnection();
@@ -91,9 +92,9 @@ try {
     %>
    <div id="maincurrency" style="width:1000px"><code>
 <% 
-    cs = con.prepareCall("{call Get_Invoices(?)}");
-    //int pid =Integer.parseInt(String.valueOf(payerid));
-    cs.setInt(1, payerid);
+  
+    
+    Map<String,Invoice> invoices = FactorDBService.getInstance().getInvoices(payerid);
     //cs.setString(2, company);
     //cs.registerOutParameter(2, Types.VARCHAR);
     //cs.execute();
@@ -102,9 +103,10 @@ try {
     
        int loop =0;
        int loop1=0;
-        rs = cs.executeQuery();
         int counter=0;
-        while (rs.next()) 
+        
+     
+        for (String sysid: invoices.keySet()) 
         { if (loop==0){%></code>
                <tr><td colspan=2 ><h3>     
                 <Label id="CurrencyInvoice" style="text-decoration:underline;color:#d06200"><%=companyD%> Invoices</Label>
@@ -123,8 +125,8 @@ try {
               </tr>
    <code>      <%}
         loop=loop+1; 
-        
-        String invcurrency = rs.getString(7);
+        Invoice i = invoices.get(sysid);
+        String invcurrency = i.getCompanyId();
         if (invcurrency !=null)
         	invcurrency = invcurrency.trim();
         if ((invcurrency.equals("01") && company.equals("01"))
@@ -132,21 +134,21 @@ try {
         {counter1=counter1+1;
         %></code>
      <tr>   
-            <td><h6 style="font-size:1.7em;"><%= rs.getString(2)%></h6></td>
-       <td><h6><%= rs.getString(9)%></h6></td>
-        <td><h6><%= rs.getString(1)%></h6></td>
+            <td><h6 style="font-size:1.7em;"><%=  i.getClientName() %></h6></td>
+       <td><h6><%= i.getPoNumber() %></h6></td>
+        <td><h6><%= i.getInvoiceId() %></h6></td>
         <td><h6><%   Date currentDate = new Date();
-                  Date openDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(rs.getString(6));
+                  Date openDate = i.getPurchaseDate();
                   long daysms =  Math.abs(currentDate.getTime() - openDate.getTime());
                   long ONE_DAY = 1000 * 60 * 60 * 24;
                   int days = Math.round(daysms /ONE_DAY);
                   %>
         <%= days%></h6></td>
-        <td><h6><%= colorMe(rs.getString(8))%></h6></td>
+        <td><h6><%= colorMe(i.getStatus())%></h6></td>
         <td class="h6right"><% //DecimalFormat decim = new DecimalFormat("0.00");
         //String price2 = decim.format(Double.parseDouble(rs.getString(3)));
         NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
-        Double d = Double.parseDouble(rs.getString(3)) ;
+        Double d = Double.parseDouble(i.getAssignment()) ;
 		   String price2 = fmt.format(d);
       
         %><%=price2 %></h6></td>
@@ -155,10 +157,10 @@ try {
         <td class="AccountDependent AccountNoSelect"><h6><input type=text style="width:120px"  name="paymentComment<%=counter%>"></h6></td>
         
         <td class="AccountDependent AccountNoSelect"><h6><input type=checkbox  class="paycheck" name="paycheck<%=counter%>"></h6></td>
-        <td><input type="hidden" name="invoiceid<%=counter%>" id="invoiceid<%=counter%>" value=<%=rs.getString(4) %> >
-        <input type="hidden" name="invoiceNumber<%=counter%>" id="invoiceNumber<%=counter%>" value=<%=rs.getString(1) %> ></td>
-        <td><input type="hidden" name="clientid<%=counter%>" id="clientid<%=counter%>" value=<%=rs.getString(5) %> >
-        <input type="hidden" name="amount<%=counter%>" id="amount<%=counter%>" value=<%=rs.getString(3) %> >
+        <td><input type="hidden" name="invoiceid<%=counter%>" id="invoiceid<%=counter%>" value=<%=sysid %> >
+        <input type="hidden" name="invoiceNumber<%=counter%>" id="invoiceNumber<%=counter%>" value=<%=i.getInvoiceId() %> ></td>
+        <td><input type="hidden" name="clientid<%=counter%>" id="clientid<%=counter%>" value=<%=i.getClientSysId() %> >
+        <input type="hidden" name="amount<%=counter%>" id="amount<%=counter%>" value=<%=i.getAssignment() %> >
         
         </td>
 
@@ -179,13 +181,11 @@ try {
    <div id="secondarycurrency" style="visibility:hidden;width:1000px;">
     <!-- second round -->
     <% counter1=0;
-        cs = con.prepareCall("{call Get_Invoices(?)}");
-        cs.setInt(1, payerid);
-        rs = cs.executeQuery();
-    //rs.beforeFirst(); 
-    
-    while (rs.next()){
-    	String invcurrency = rs.getString(7);
+ 
+    for (String sysid: invoices.keySet()){
+    	
+    	Invoice inv = invoices.get(sysid);
+    	String invcurrency = inv.getCompanyId();
         if (invcurrency !=null)
         	invcurrency = invcurrency.trim();
     if ((invcurrency.equals("01") && !company.equals("01"))
@@ -198,19 +198,19 @@ try {
      counter1=counter1+1;
      %>
      <tr  class="secondarycurrency">   
-            <td><h6 style="font-size:1.7em;"><%= rs.getString(2)%></h6></td>
-        <td><h6><%= rs.getString(9)%></h6></td>
-        <td><h6><%= rs.getString(1)%></h6></td>
+            <td><h6 style="font-size:1.7em;"><%= inv.getClientName() %></h6></td>
+        <td><h6><%= inv.getPoNumber() %></h6></td>
+        <td><h6><%= inv.getInvoiceId() %></h6></td>
         <td><h6><%   Date currentDate = new Date();
-                  Date openDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(rs.getString(6));
+                  Date openDate = inv.getPurchaseDate();
                   long daysms =  Math.abs(currentDate.getTime() - openDate.getTime());
                   long ONE_DAY = 1000 * 60 * 60 * 24;
                   int days = Math.round(daysms /ONE_DAY);
                   %>
         <%= days%></h6></td>
-      <td>  <h6><%= colorMe(rs.getString(8))%></h6></td>
+      <td>  <h6><%= colorMe(inv.getStatus())%></h6></td>
         <td class="h6right">$<% DecimalFormat decim = new DecimalFormat("0.00");
-        String price2 = String.format("%,14.2f",Double.parseDouble(rs.getString(3)));
+        String price2 = String.format("%,14.2f",Double.parseDouble(inv.getAssignment()));
 
         %><%=price2 %></td>
       
@@ -219,10 +219,10 @@ try {
         <td class="AccountDependent"><h6><input type=text style="width:120px"  name="paymentComment<%=counter%>"></h6></td>
         
         <td class="AccountDependent"><h6><input type=checkbox  class="paycheck" name="paycheck<%=counter%>"></h6></td>
-        <td><input type="hidden" name="invoiceid<%=counter%>" id="invoiceid<%=counter%>" value=<%=rs.getString(4) %> >
-        <input type="hidden" name="invoiceNumber<%=counter%>" id="invoiceNumber<%=counter%>" value=<%=rs.getString(1) %> ></td>
-        <td><input type="hidden" name="clientid<%=counter%>" id="clientid<%=counter%>" value=<%=rs.getString(5) %> >
-        <input type="hidden" name="amount<%=counter%>" id="amount<%=counter%>" value=<%=rs.getString(3) %> >
+        <td><input type="hidden" name="invoiceid<%=counter%>" id="invoiceid<%=counter%>" value=<%=sysid %> >
+        <input type="hidden" name="invoiceNumber<%=counter%>" id="invoiceNumber<%=counter%>" value=<%=inv.getInvoiceId() %> ></td>
+        <td><input type="hidden" name="clientid<%=counter%>" id="clientid<%=counter%>" value=<%=inv.getClientSysId() %> >
+        <input type="hidden" name="amount<%=counter%>" id="amount<%=counter%>" value=<%=inv.getAssignment() %> >
         
         </td>
 
@@ -242,7 +242,7 @@ try {
     <%} %>
        </div> 
     <input type=hidden id="counter" name="counter" value="<%=counter%>"> 
-    <% 
+    <%
 } catch (SQLException e) {
     System.err.println("SQLException: " + e.getMessage());
 }
@@ -250,13 +250,7 @@ catch (Exception e) {
     System.err.println("SQLException: " + e.getMessage());
 }
 finally {
-    if (cs != null) {
-        try {
-            cs.close();
-        } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
-        }
-    }
+
     SqlServerDBService.getInstance().releaseConnection(con);
 }
 

@@ -11,6 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="com.ips.model.*" %>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -544,15 +545,10 @@ while (rs.next()) {
 }
 	String email1="";
 	String email2="";
-	CallableStatement cs = con.prepareCall("exec Get_Emails ? ");
-		String spayerid = Integer.toString(payerid);
-	    cs.setString(1, spayerid);
-		rs = cs.executeQuery();
-			while (rs.next()){
-			email1=rs.getString("ContactEMail");
-			email2=rs.getString("Contact2EMail");
-			//name =rs.getString("name1") + " " + rs.getString("name2");
-			}
+	String spayerid = Integer.toString(payerid);
+	Debtor dcont = FactorDBService.getInstance().getEmails(spayerid);
+	email1 = dcont.getContactEmail();
+	email2 = dcont.getContact2Email();
 	} catch (Exception e) {
 		System.err.print(e.getMessage());
 	} finally {
