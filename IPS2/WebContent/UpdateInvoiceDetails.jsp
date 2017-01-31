@@ -28,7 +28,7 @@ $(document).ready({alert("ab");
 </script>
 </head>
 <body>
-<form id="updateform" action="UpdateInvoice" method=post>
+<form id="updateform" action="UpdateInvoice_M" method=post>
 <table border=0 cellpadding=5 cellspacing=0>
 <% String id=request.getParameter("id");
 id = id.replace("/","");%>

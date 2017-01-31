@@ -264,7 +264,7 @@ if (userid==null)
         }
 %>
 <div id="dialog-modal" title="Confirmation requise "  style="display:none;">
-<form name="manageAcct2" id="form2"  action="ProcessAcctf" method="post" >
+<form name="manageAcct2" id="form2"  action="ProcessAcctf_M" method="post" >
 <input type=hidden id="pyid" name="pyid" value="<%=userid%>">
   <input type=hidden id="AcctId2" name="AcctId2" value="77">
   <input type=hidden id="act" name="act" value="Delete">
@@ -295,7 +295,7 @@ con = SqlServerDBService.getInstance().openConnection();
 con1 = FactorDBService.getInstance().openConnection();
 %>
   
-<form name="manageAcct" id="form"  action="ProcessAcctf" method="post" >
+<form name="manageAcct" id="form"  action="ProcessAcctf_M" method="post" >
 
   
 

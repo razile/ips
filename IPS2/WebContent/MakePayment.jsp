@@ -495,7 +495,7 @@ if (userid==null) userid = userid1;
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>
-<form name="makePayment" id="form" action="InvoicePayment" method="post">
+<form name="makePayment" id="form" action="InvoicePayment_M" method="post">
 
 
 

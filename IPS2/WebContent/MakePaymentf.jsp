@@ -502,7 +502,7 @@ String userid = (String)request.getParameter("pyid"); //(String)session.getAttri
 
 <%@include file='headerf.jsp'%>
 <%@include file='sidebarf.jsp'%>
-<form name="makePayment" id="form" action="InvoicePaymentf" method="post">
+<form name="makePayment" id="form" action="InvoicePaymentf_M" method="post">
 
 
 <div id="fake_box">

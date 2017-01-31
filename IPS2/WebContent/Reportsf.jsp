@@ -82,8 +82,8 @@ String userid = (String)request.getParameter("pyid");
 
 <%@include file='headerf.jsp'%>
 <%@include file='sidebarf.jsp'%>	
-<form action="ReportGeneratorf" target="_blank" id="form" method=post>
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
+<form action="ReportGeneratorf_M" target="_blank" id="form" method=post>
+
 
 
 <form action="#">
