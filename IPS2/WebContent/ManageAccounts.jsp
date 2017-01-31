@@ -310,8 +310,8 @@ try
 <%
 
 String sql = "SELECT DebtorId FROM Debtor d where d.SysId="+payerid;
-ps = con1.prepareStatement(sql);
-rs = ps.executeQuery();
+Statement st = con1.createStatement();
+rs = st.executeQuery(sql);
 String DebtorId = ""; 
 while(rs.next())    
 {DebtorId = rs.getString("DebtorId");
@@ -331,9 +331,9 @@ while(rs.next())
 	</table>
 	<% 
 	 sql = "SELECT Name1, DebtorId,a.street1,a.street2, a.city,a.state,a.zip FROM Debtor d join Address a on a.SysParentId =  d.SysId where a.addressType='Main' and a.ParentTable='Debtor' and d.SysId="+payerid;
-    ps = con1.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, 
+    st = con1.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, 
             ResultSet.CONCUR_UPDATABLE);
-    rs = ps.executeQuery();
+    rs = st.executeQuery(sql);
   
     while(rs.next())    
     {%> 

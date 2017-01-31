@@ -80,7 +80,7 @@
 
 <%
 
-PreparedStatement ps = null;
+Statement ps = null;
 Connection con1 = null;
 try
 {
@@ -88,8 +88,8 @@ try
 con1 = FactorDBService.getInstance().openConnection();
 int payerId=Integer.parseInt(session.getAttribute("pyid").toString());
 String sql = "SELECT Name1,DebtorId,street1,street2,city,state,country,zip from Debtor join Address on Address.SysParentId = Debtor.SysId where Address.ParentTable='DEBTOR' and Debtor.SysId="+payerId;
-ps = con1.prepareStatement(sql);
-ResultSet rs = ps.executeQuery(); 
+ps = con1.createStatement();
+ResultSet rs = ps.executeQuery(sql); 
 %>
 <table cellpadding=0 cellspacing=0 style="vertical-align:top;width:400px" border=0> 
 <tr><td width=240px colspan=3  style="vertical-align:top;"><h3>Select you Bank Account</h3></td></tr><tr>

@@ -19,9 +19,9 @@ String piid = plog;
 
 Connection conH = FactorDBService.getInstance().openConnection();
 
-String sql23 = "select debtorid from Debtor where sysid ='" + piid+"'";
-PreparedStatement ps3  = conH.prepareStatement(sql23);
-ResultSet rs3 = ps3.executeQuery();
+String sql23 = "select debtorid from Debtor where sysid ='" + piid+"';";
+Statement ps3  = conH.createStatement();
+ResultSet rs3 = ps3.executeQuery(sql23);
 String debtrid = null;
 if(rs3.next()){
     debtrid= rs3.getString("debtorid");// + " " + rs.getString("Name2");
@@ -32,14 +32,13 @@ String dtid= null;
 String dpass= null;
 String dbnm= null;
 String isclnt= null;
-PreparedStatement s=null;
+Statement s=null;
 ResultSet rs2 =null;
 try{
 	//String sql22="SELECT Fac.DebtorId as 'dbid', Fac.Name1 + ' ' + Fac.Name2 as 'dbname',Deb.Password as 'dbpass', isnull(Deb.NewClient,'Y') as 'clnt' FROM dbo.Debtor Deb JOIN Factor.dbo.Debtor Fac ON Deb.OldDebtor_PK = Fac.SysId WHERE Fac.DebtorId =?";
-	String sql22="SELECT DebtorId as 'dbid', Name1 as 'dbname', Status FROM Debtor where DebtorId=?;";
- 	s = conH.prepareStatement(sql22);
- 	s.setString(1,debtrid);
- 	rs2 = s.executeQuery();
+	String sql22="SELECT DebtorId as 'dbid', Name1 as 'dbname', Status FROM Debtor where DebtorId=" + debtrid;
+ 	s = conH.createStatement();
+ 	rs2 = s.executeQuery(sql22);
  	while (rs2.next()) {
  		dtid = new String(rs2.getString("dbid"));
  		//dpass = new String (rs2.getString("dbpass"));

@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class FactorDBService {
 			connection = openConnection();
 	
 			sql = "SELECT sysid, name1, name2, debtorid from Debtor";
-			PreparedStatement ps = connection.prepareStatement(sql);
+			Statement ps = connection.createStatement(); 
 			
 			ResultSet rs = ps.executeQuery(sql);
 			
@@ -95,7 +96,7 @@ public class FactorDBService {
 			connection = openConnection();
 	
 			sql = "SELECT sysid, name1, name2  from Client";
-			PreparedStatement ps = connection.prepareStatement(sql);
+			Statement ps = connection.createStatement();
 			
 			ResultSet rs = ps.executeQuery(sql);
 			
@@ -132,11 +133,10 @@ public class FactorDBService {
 				+ " INNER JOIN Relation AS Rel ON Inv.SysRelId = Rel.SysId"
 				+ " INNER JOIN Client AS Cli ON Rel.SysClientId = Cli.SysId" 
 				+ " INNER JOIN Company AS Com ON Cli.SysCompId = Com.SysId"
-				+ " WHERE (Dtr.DebtorId = ?) AND (Inv.Status = 'ACTI') AND (Acc.Repossession = 'N')"
+				+ " WHERE (Dtr.DebtorId = " + payerid + ") AND (Inv.Status = 'ACTI') AND (Acc.Repossession = 'N')"
 				+ " ORDER BY Com.CompanyId, Inv.DueDate";
 			
-			PreparedStatement ps = connection.prepareStatement(sql);
-			ps.setInt(1, payerid);
+			Statement ps = connection.createStatement();
 			
 			ResultSet rs = ps.executeQuery(sql);
 			
@@ -251,9 +251,8 @@ public class FactorDBService {
 		try {
 			connection = openConnection();
 	
-			sql = "SELECT invid from Invoice where sysid = ?";
-			PreparedStatement ps = connection.prepareStatement(sql);
-			ps.setString(1, sysid);
+			sql = "SELECT invid from Invoice where sysid = " + sysid;
+			Statement ps = connection.createStatement();
 			ResultSet rs = ps.executeQuery(sql);
 			
 			if (rs.next()) {
@@ -292,10 +291,9 @@ public class FactorDBService {
             + " WHERE (Con.ParentTable = 'DEBTOR') AND (Con.ContactType = 'SHIP') AND (Adr.ParentTable = 'CONTACT') AND (Adr.AddressType = 'MAIN'))"
             + " AS Csh ON Deb.SysId = Csh.SysParentId "
             + " LEFT OUTER JOIN Debtor AS Dpa ON Deb.SysId = Dpa.SysId"
-            + " WHERE (Deb.SysId = ?) AND (Adr.ParentTable = 'DEBTOR') AND (Adr.AddressType = 'MAIN')";
+            + " WHERE (Deb.SysId = " + debtorSysId + ") AND (Adr.ParentTable = 'DEBTOR') AND (Adr.AddressType = 'MAIN')";
 			
-			PreparedStatement ps = connection.prepareStatement(sql);
-			ps.setInt(1, Integer.parseInt(debtorSysId));
+			Statement ps = connection.createStatement();
 			ResultSet rs = ps.executeQuery(sql);
 			
 			if (rs.next()) {

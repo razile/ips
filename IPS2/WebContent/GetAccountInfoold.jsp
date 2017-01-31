@@ -35,8 +35,8 @@ String formattedDate = df.format(new java.util.Date());
 while(rs.next()){
 	//int payerid=Integer.parseInt(session.getAttribute("pyid").toString());;
 	  sql = "SELECT Name1, DebtorId,a.street1,a.street2, a.city,a.state,a.zip FROM Debtor d join Address a on a.SysParentId =  d.SysId where a.addressType='Main' and a.ParentTable='Debtor' and d.SysId="+pid;
-    ps = con1.prepareStatement(sql);
-    ResultSet rs2 = ps.executeQuery();
+	  Statement st = con1.createStatement();
+	  ResultSet rs2 = st.executeQuery(sql);
  %>
 <table border=1px style="width:833;height:354"><tr><td>
 <table border=0 cellpadding=0 cellspacing=0 style="vertical-align:top;text-align:left;width:833;height:354" id="chktbl">

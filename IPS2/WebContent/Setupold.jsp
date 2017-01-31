@@ -118,8 +118,8 @@ if (rs.next())
 
 
  sql = "SELECT Name1, Name2 FROM Debtor d where d.SysId="+debtorid;
-ps = con1.prepareStatement(sql);
-ResultSet rs2 = ps.executeQuery();
+Statement st = con1.createStatement();
+ResultSet rs2 = ps.executeQuery(sql);
 int rowCount=0;
 if(rs2.next()){
     name = rs2.getString("Name1");// + " " + rs.getString("Name2"); 
