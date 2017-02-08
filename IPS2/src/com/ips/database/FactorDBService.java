@@ -126,7 +126,7 @@ public class FactorDBService {
 		try {
 			connection = openConnection();
 	
-			sql = "SELECT Inv.InvId, Inv.TermsOfSale, Cli.Name1, Cli.Name2, Inv.Assignment, Inv.SysId, Cli.SysId AS Expr1, Inv.PurchDate, Com.CompanyId, Inv.PoNumber"
+			sql = "SELECT Inv.InvId, Inv.TermsOfSale, Cli.Name1, Cli.Name2, Inv.Assignment, Inv.SysId, Cli.SysId AS Expr1, Inv.InvDate, Com.CompanyId, Inv.PoNumber"
 				+ " FROM Invoice AS Inv INNER JOIN Account AS Acc ON Inv.SysAcctId = Acc.SysId"
 				+ " INNER JOIN Debtor AS Dtr ON Acc.SysDtrId = Dtr.SysId"
 				+ " INNER JOIN Schedules AS Sch ON Inv.SysSchedId = Sch.SysId"
@@ -149,7 +149,7 @@ public class FactorDBService {
 				i.setClientSysId(rs.getString("expr1"));
 				i.setInvoiceId(rs.getString("invid"));
 				String tos = rs.getString("termsofsale");
-				Date pd = rs.getDate("purchdate", Calendar.getInstance());
+				Date pd = rs.getDate("invdate", Calendar.getInstance());
 				String status = getStatus(tos,pd);
 				
 				i.setTermsOfSale(tos);

@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<form method=post  action="ReportGenerator_M" id="form1">
+<form method=post  action="ReportGenerator" id="form1">
 <input type="hidden" id="hiddenId" name="hiddenId"/>
 </form>
 <div id="showtext"></div>

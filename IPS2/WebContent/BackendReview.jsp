@@ -237,7 +237,7 @@ $(document).ready(function() {
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>
-<form name="ReviewPayment" id="formId" action="ReviewPayment_M" method="post" >
+<form name="ReviewPayment" id="formId" action="ReviewPayment" method="post" >
 <input type="hidden" id="declineh" name="declineh" value="off"> 
 <input type="hidden" id="approveh" name="approveh" value="off"> 
 <input type="hidden" id="deleteadminh" name="deleteadminh" value="off">

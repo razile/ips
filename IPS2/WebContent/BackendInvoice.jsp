@@ -89,7 +89,7 @@ try
 	int counter =0;
 	while (rs.next()){%>
 				<tr><td>
-				<a class="one" href=<%="AdminReport_M?id="+rs.getString("SysId")%>><%=rs.getString("SysId")%> - <%=rs.getString("PayerId")%>- <%=rs.getString("InvoiceDate")%>  </a>
+				<a class="one" href=<%="AdminReport?id="+rs.getString("SysId")%>><%=rs.getString("SysId")%> - <%=rs.getString("PayerId")%>- <%=rs.getString("InvoiceDate")%>  </a>
 				</td>
 							</tr>
 	<% }

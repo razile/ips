@@ -152,7 +152,7 @@ $(document).ready(function() {
 		}
 	else if (which=="deeeeelete"){
 		$.ajax({
-			   url: "ReviewPaymentf_M",
+			   url: "ReviewPaymentf",
 			   dataType: 'json',
 			   type:POST,
 			   success: function(data) {
@@ -194,7 +194,7 @@ String userid = (String)request.getParameter("pyid");
 <%@include file='headerf.jsp'%>
 <%@include file='sidebarf.jsp'%>
 <div id="innerbody">
-<form name="ReviewPayment" id="formId" action="ReviewPaymentf_M" method="post" >
+<form name="ReviewPayment" id="formId" action="ReviewPaymentf" method="post" >
 
 
 <input type=hidden id="pyid" name="pyid" value="<%=userid%>">

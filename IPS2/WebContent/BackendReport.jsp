@@ -63,7 +63,7 @@ String userid = (String)request.getParameter("pyid");
 
 <%@include file='header.jsp'%>
 	<%@include file='sidebar.jsp'%>
-	<form method="post" action="AdminReport_M">
+	<form method="post" action="AdminReport">
 		<table border=0 cellpadding=0 cellspacing=0 width=800 >
 			<tr><td colspan=2></td></tr>
 			<tr>

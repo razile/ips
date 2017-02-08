@@ -266,7 +266,7 @@ if (userid==null)
         }
 %>
 <div id="dialog-modal" title="Confirmation Required"  style="display:none;">
-<form name="manageAcct2" id="form2"  action="ProcessAcct_M" method="post" >
+<form name="manageAcct2" id="form2"  action="ProcessAcct" method="post" >
 <input type=hidden id="pyid" name="pyid" value="<%=userid%>">
   <input type=hidden id="AcctId2" name="AcctId2" value="77">
   <input type=hidden id="act" name="act" value="Delete">
@@ -299,7 +299,7 @@ try
 
 %>
   
-<form name="manageAcct" id="form"  action="ProcessAcct_M" method="post" >
+<form name="manageAcct" id="form"  action="ProcessAcct" method="post" >
 
   
 

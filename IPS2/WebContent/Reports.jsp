@@ -82,7 +82,7 @@ String userid = (String)request.getParameter("pyid");
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>	
-<form action="ReportGenerator_M" target="_blank" id="form" method=post>
+<form action="ReportGenerator" target="_blank" id="form" method=post>
 
 
 <form action="#">

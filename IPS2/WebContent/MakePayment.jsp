@@ -495,7 +495,7 @@ if (userid==null) userid = userid1;
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>
-<form name="makePayment" id="form" action="InvoicePayment_M" method="post">
+<form name="makePayment" id="form" action="InvoicePayment" method="post">
 
 
 
@@ -534,7 +534,7 @@ String act = request.getParameter("check");
 <option value="0">Select Account</option>
 <% 
 while (rs.next()) {
-	String acctName = rs.getString("AccountName") + " - " + rs.getString("CurrencyType");
+	String acctName = rs.getString("AccountNumber") + " - " + rs.getString("CurrencyType");
 	String sysId = rs.getString("SysId");
 %>
 

@@ -319,7 +319,7 @@ $("#account").prop("disabled", true);
 <body>
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>
-<form name="makePayment" id="form" action="InvoicePayment_M" method="post" >
+<form name="makePayment" id="form" action="InvoicePayment" method="post" >
 
 
 
