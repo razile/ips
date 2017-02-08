@@ -324,11 +324,11 @@ try
 			%>
 		<tr>
 <%        String newEmail = rs.getString("newEmail");
-	   	if (email2 != null && email2.equalsIgnoreCase(newEmail)){       			
+	   	if ((newEmail == null)|| (email1.equalsIgnoreCase(newEmail))){       			
 %>
 			<td><input type="radio" name="check" value=<%=rs.getString("SysId") %>></td>
 <% 		}else{%>
-			<td><h3>Change email to:&nbsp;<%=rs.getString("newEmail")%> </h3></td>
+			<td><h5>Change email to:&nbsp;<%=rs.getString("newEmail")%> </h5></td>
 	<% 	}%>
 <td><h6><%= rs.getString("SysId") %></h6></td>
 <td><h6><%String name= d.getName1() + " " + d.getName2() ; 
