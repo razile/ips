@@ -225,7 +225,7 @@ try
 {
 con = SqlServerDBService.getInstance().openConnection();
 Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();	
-Debtor d = debtors.get(userid);
+Debtor d = debtors.get(String.valueOf(payerid));
 
 cs = con.prepareCall("exec itdebtor_m ?");
 cs.setInt(1, payerid);
