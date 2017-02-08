@@ -318,8 +318,8 @@ try
 		
 		
 		Debtor dcont = FactorDBService.getInstance().getEmails(spayerid);
-		email1 = d.getContactEmail();
-		email2 = d.getContact2Email();
+		email1 = dcont.getContactEmail();
+		email2 = dcont.getContact2Email();
 				
 			%>
 		<tr>
