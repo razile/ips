@@ -324,7 +324,7 @@ try
 			%>
 		<tr>
 <%        String newEmail = rs.getString("newEmail");
-	   	if (email2.equalsIgnoreCase(newEmail)){       			
+	   	if (email2 != null && email2.equalsIgnoreCase(newEmail)){       			
 %>
 			<td><input type="radio" name="check" value=<%=rs.getString("SysId") %>></td>
 <% 		}else{%>

@@ -147,7 +147,7 @@ public class AdminReport extends HttpServlet {
 						// Left join Factor.dbo.Client  on Client.sysid = ip.payee left join Factor.dbo.Debtor d on pa.payerid = d.Sysid
 						
 						// FACTOR-CLIENT-DEBTOR
-						sql= "SELECT it.InvoiceDate ,ip.InvId, ip.payee,"
+						sql= "SELECT it.InvoiceDate ,ip.InvId, ip.payee, pa.payerid,"
 								+ "ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status " 
 								+ "FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.sysid = it.SysAcctId "
 								+ "where isnumeric(ip.payee)=1" ;			 
