@@ -22,7 +22,8 @@
 <% 
 String accid=request.getParameter("str");
 String pid=request.getParameter("pid");
-Connection con, con1;
+Connection con = null;
+Connection con1 = null;
 try{
 	
 	con = SqlServerDBService.getInstance().openConnection();
