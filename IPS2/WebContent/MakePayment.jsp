@@ -558,7 +558,7 @@ while (rs.next()) {
 </select></td><td style="height:20px"></td></tr>
 </table></td>
 </tr>
-<tr><td  style="font-family:Arial;font-size:12px;">Email:<input type=text id="newEmail" name="newEmail" value="" style="width:250px"></td></tr>
+<tr><td  style="font-family:Arial;font-size:12px;">Email:<input type=text id="newEmail" name="newEmail" value="<%=email1%>" style="width:250px"></td></tr>
 <tr><td colspan=2 style="font-family:Arial;font-size:12px;color:red">*When you successfully submit a payment, you should get a Transaction Complete PDF confirmation. If you do not
 see this confirmation, please make sure to allow<br> pop-ups within your browser.</td></tr>
 <tr><td height=10px></td></tr>
