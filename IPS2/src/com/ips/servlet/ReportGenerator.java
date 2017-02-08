@@ -233,6 +233,14 @@ public class ReportGenerator extends HttpServlet {
 					status = status + "'Submitted',";
 					useStatus = true;
 				}
+				
+				String approved = request.getParameter("approved");
+				if ("ON".equals(approved)) {
+					status = status + "'Approved',";
+					useStatus = true;
+				}
+				
+				
 				if (useStatus) {
 					status = status.substring(0, status.length() - 1);
 					status = status + ")";
