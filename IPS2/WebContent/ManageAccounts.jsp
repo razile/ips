@@ -11,6 +11,8 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="com.ips.database.*"%>
+
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -271,11 +273,11 @@ if (userid==null)
 </form>  The account will be deleted; however, any existing invoice payments will still be processed, and you will be able to see them as part of your history within the reports. 
 </div>
 
-<%@ include file="connection.jsp" %>
+
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>	
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
+
 
 
 <%
@@ -292,10 +294,8 @@ catch(Exception e){e.printStackTrace();}
 String debtorid=null;
 try
 {
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
-Class.forName("com.sybase.jdbc3.jdbc.SybDriver");
-con1 = DriverManager.getConnection(url1,user1,psw1);
+	con = SqlServerDBService.getInstance().openConnection();
+    con1 = FactorDBService.getInstance().openConnection();
 
 %>
   
@@ -310,8 +310,8 @@ con1 = DriverManager.getConnection(url1,user1,psw1);
 <%
 
 String sql = "SELECT DebtorId FROM Debtor d where d.SysId="+payerid;
-ps = con1.prepareStatement(sql);
-rs = ps.executeQuery();
+Statement st = con1.createStatement();
+rs = st.executeQuery(sql);
 String DebtorId = ""; 
 while(rs.next())    
 {DebtorId = rs.getString("DebtorId");
@@ -331,9 +331,9 @@ while(rs.next())
 	</table>
 	<% 
 	 sql = "SELECT Name1, DebtorId,a.street1,a.street2, a.city,a.state,a.zip FROM Debtor d join Address a on a.SysParentId =  d.SysId where a.addressType='Main' and a.ParentTable='Debtor' and d.SysId="+payerid;
-    ps = con1.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, 
+    st = con1.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, 
             ResultSet.CONCUR_UPDATABLE);
-    rs = ps.executeQuery();
+    rs = st.executeQuery(sql);
   
     while(rs.next())    
     {%> 
@@ -411,8 +411,8 @@ while(rs.next())
 }
     catch(Exception e){e.printStackTrace();}
     finally{try{
-    	con.close();
-    	con1.close();
+    	SqlServerDBService.getInstance().releaseConnection(con);
+    	FactorDBService.getInstance().releaseConnection(con1);
     }
     catch(Exception e){e.printStackTrace();}
     } 

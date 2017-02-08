@@ -60,7 +60,7 @@ String userid = (String)request.getParameter("pyid");
         response.sendRedirect("http://live.invoicepayment.ca/ipspayers/index.htm");
         }
 %>
-<%@ include file="connection.jsp" %>
+
 <%@include file='header.jsp'%>
 	<%@include file='sidebar.jsp'%>
 	<form method="post" action="AdminReport">

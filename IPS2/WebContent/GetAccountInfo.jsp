@@ -5,6 +5,8 @@
 <%@page import="java.util.*,java.sql.*,java.io.*" %>
 <%@page import="javax.servlet.*" %>
 <%@page import="javax.servlet.http.*" %>
+<%@page import="com.ips.database.*" %>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -12,21 +14,19 @@
 <title>Insert title here</title>
 </head>
 <body>
-<%! Connection con; 
-    Connection con1; %>
+
 <%! PreparedStatement ps; %>
 <%! ResultSet rs; %>
-<%@ include file="connection.jsp" %>
+
 
 <% 
 String accid=request.getParameter("str");
 String pid=request.getParameter("pid");
-String driverName = "net.sourceforge.jtds.jdbc.Driver";
+Connection con, con1;
 try{
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
-//Class.forName("net.sourceforge.jtds.jdbc.SybDriver");
-con1 = DriverManager.getConnection(url1,user1,psw1);
+	
+	con = SqlServerDBService.getInstance().openConnection();
+    con1 = FactorDBService.getInstance().openConnection();
 
 String sql = "SELECT SysId,TransitNumber,BranchCode,AccountNumber,CurrencyType FROM PayersAccounts pa where pa.SysId="+accid;
 ps = con.prepareStatement(sql);
@@ -35,9 +35,9 @@ SimpleDateFormat df = new SimpleDateFormat("MMMM dd, yyyy");
 String formattedDate = df.format(new java.util.Date());
 while(rs.next()){
 	//int payerid=Integer.parseInt(session.getAttribute("pyid").toString());;
-	  sql = "SELECT Name1, DebtorId,a.street1,a.street2, a.city,a.state,a.zip FROM Debtor d join Address a on a.SysParentId =  d.SysId where a.addressType='Main' and a.ParentTable='Debtor' and d.SysId="+pid;
-    ps = con1.prepareStatement(sql);
-    ResultSet rs2 = ps.executeQuery();
+	sql = "SELECT Name1, DebtorId,a.street1,a.street2, a.city,a.state,a.zip FROM Debtor d join Address a on a.SysParentId =  d.SysId where a.addressType='Main' and a.ParentTable='Debtor' and d.SysId="+pid;
+    Statement st = con1.createStatement();
+    ResultSet rs2 = st.executeQuery(sql);
  %>
 <table border=1px style="width:833;height:354"><tr><td>
 <table border=0 cellpadding=0 cellspacing=0 style="vertical-align:top;text-align:left;width:833;height:354" id="chktbl">
@@ -95,8 +95,10 @@ $&nbsp;<input type=text width=100px name="totalPayment" id="totalPayment" class=
 <%}
   }
 catch(Exception e){ e.printStackTrace(); }
-finally{con.close();
-        con1.close();}
+finally{
+	SqlServerDBService.getInstance().releaseConnection(con);
+	FactorDBService.getInstance().releaseConnection(con1);
+ }
  %>
 </body>
 </html>

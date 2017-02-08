@@ -11,6 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="com.ips.model.*" %>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -319,9 +320,9 @@ $("#account").prop("disabled", true);
 <%@include file='headerf.jsp'%>
 <%@include file='sidebarf.jsp'%>
 <form name="makePayment" id="form" action="InvoicePaymentf" method="post" >
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@ include file="connection.jsp" %>
+
+
 
 
 
@@ -348,8 +349,7 @@ String act = "";
 try
 {
 	
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+con = SqlServerDBService.getInstance().openConnection();
 sql = "SELECT SysId,AccountNumber,CurrencyType FROM PayersAccounts p where p.Active=1 and p.PayerId="+payerid;
 ps = con.prepareStatement(sql);
 rs = ps.executeQuery(); 
@@ -404,12 +404,8 @@ if (act!=null)
      <td style="width:150px"><h6>Comments</h6></td>
     <td style="width:150px"><h6>Confirm</h6></td>
      </tr>
-<% CallableStatement cs=null;
-	Class.forName(driverName);
-    con = DriverManager.getConnection(url,user,psw);
-    cs = con.prepareCall("{call Get_Invoices(?)}");
-    //int pid =Integer.parseInt(String.valueOf(payerid));
-    cs.setInt(1, payerid);
+<% 
+	Map<String,Invoice> invoices = FactorDBService.getInstance().getInvoices(payerid);
     //cs.setInt(2, Integer.parseInt(act));
 
     //cs.registerOutParameter(2, Types.VARCHAR);
@@ -417,27 +413,27 @@ if (act!=null)
     //String str = cs.getString(1);
     DecimalFormat decim = new DecimalFormat("0.00");
         
-        rs = cs.executeQuery();
+        
         int counter=0;
         String ids= "";
-        while (rs.next()) 
+        for (String sysid:invoices.keySet()) 
         {
+        	Invoice i = invoices.get(sysid);
         	String price3="";
-        	price3= decim.format(Double.parseDouble(rs.getString(3))); 
-            
+        	price3= decim.format(i.getAssignment()); 
         %>
           
          
      <tr>   
-        <td><h6><%= rs.getString(2)%></h6></td>
-        <td><h6><%= rs.getString(1)%></h6></td>
+        <td><h6><%= i.getClientName() %></h6></td>
+        <td><h6><%= i.getInvoiceId() %></h6></td>
         <td></td>
         <td><h6><%= price3%></h6></td>
         <td><h6>
         <%
-        sql =    "select paymentamount,ip.SysId,comments from invoicepayment ip join InsuiteSybaseCoreRep.Invoice i on i.sysid = ip.InvoiceNumber where i.InvId = '"+rs.getString(1)+ "' and ip.InvoiceTransactionId = " + act;
+        String invoiceId = i.getInvoiceId();
+        sql =    "select paymentamount,ip.SysId,comments from invoicepayment ip where ip.InvoiceNumber = '" + invoiceId + "' and ip.InvoiceTransactionId = " + act;
 %>
-        
 <% 
         ps = con.prepareStatement(sql);
         rs2 = ps.executeQuery(); 
@@ -457,8 +453,8 @@ if (act!=null)
         <td><h6><input type=text style="width:80px"  name="paymentComment<%=counter%>" value='<%=comment %>'></h6></td>
        
         <td><h6><input type=checkbox  class="paycheck" name="paycheck<%=counter%>" <%if(amt !=null&& amt.length()>0){ %> checked <%} %>></h6></td>
-        <td><input type="hidden" name="invoiceid<%=counter%>" id="invoiceid<%=counter%>" value=<%=rs.getString(4) %> ></td>
-        <td><input type="hidden" name="clientid<%=counter%>" id="clientid<%=counter%>" value=<%=rs.getString(5) %> >
+        <td><input type="hidden" name="invoiceid<%=counter%>" id="invoiceid<%=counter%>" value=<%=i.getInvoiceSysId() %> ></td>
+        <td><input type="hidden" name="clientid<%=counter%>" id="clientid<%=counter%>" value=<%=i.getClientSysId() %> >
         <input type="hidden" name="amount<%=counter%>" id="amount<%=counter%>" value=<%=price3%> >
         
         </td>
@@ -547,20 +543,7 @@ if (act!=null)
  //   System.err.println("SQLException: " + e.getMessage());
 }
 finally {
-   /* if (cs != null) {
-        try {
-            cs.close();
-        } catch (SQLException e) {
-            System.err.println("SQLException: " + e.getMessage());
-        }
-    }*/
-    if (con != null) {
-        try {
-            con.close();
-        } catch (SQLException e) {e.printStackTrace();
-  //          System.err.println("SQLException: " + e.getMessage());
-        }
-    }
+	SqlServerDBService.getInstance().releaseConnection(con);
 }
 
 %>

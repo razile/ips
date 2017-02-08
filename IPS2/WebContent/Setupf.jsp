@@ -96,7 +96,7 @@ if (userid==null)
         }
 }
 %>
-<%@ include file="connection.jsp" %>
+
 <%@include file='headerf.jsp'%>
 <form method="post" action="ManageAccountsf.jsp"
 		onSubmit="return checkPolicy();">	
@@ -107,9 +107,7 @@ boolean exist =false;
 	String debtorid = (String) request.getParameter("plog");
 	ResultSet rs =null;
 	PreparedStatement ps = null;
-  
- Class.forName(driverName);
- Connection con =  DriverManager.getConnection(url,user,psw);
+ Connection con = SqlServerDBService.getInstance().openConnection();
  String sql = "select * from PayersAccounts where payerid ="+debtorid;
 try{
  ps = con.prepareStatement(sql);
@@ -120,7 +118,9 @@ if (rs.next())
 }
 }catch(Exception e){
 	e.printStackTrace();	
-}	
+}	finally {
+	SqlServerDBService.getInstance().releaseConnection(con);
+}
 //session.setAttribute( "pyid", debtorid );
 //session.setAttribute( "pynm", name );
 if (debtorid.equals("14148")||debtorid.equals("0014148"))

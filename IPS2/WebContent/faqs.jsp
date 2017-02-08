@@ -64,7 +64,7 @@
 </head>
 <body>
 <%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
-<%@ include file="connection.jsp" %>
+
 <% String userid="0"; %>
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>

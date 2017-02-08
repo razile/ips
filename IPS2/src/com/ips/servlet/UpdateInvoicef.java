@@ -1,7 +1,9 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
-import java.sql.DriverManager;
+import java.sql.Connection;
+
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import javax.servlet.ServletException;
@@ -9,19 +11,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
+import com.ips.database.DBProperties;
+import com.ips.database.SqlServerDBService;
+
 
 /**
  * Servlet implementation class UpdateInvoice
  */
-public class UpdateInvoice extends HttpServlet {
+public class UpdateInvoicef extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public UpdateInvoice() {
+	public UpdateInvoicef() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -41,23 +44,14 @@ public class UpdateInvoice extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
 
 		Connection connection = null;
 
 		try {
 			String act = request.getParameter("act");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
+			
+			connection = SqlServerDBService.getInstance().openConnection();
+			
 			if (act.equals("update")) {
 				int counter = Integer.parseInt(request.getParameter("counter"));
 				int loop = 0;
@@ -96,16 +90,13 @@ public class UpdateInvoice extends HttpServlet {
 			}
 		} catch (Exception e) {
 		} finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 		javax.servlet.ServletContext context = getServletContext();
 
 		String path = context.getInitParameter("IPS2Path").toString();
 
-		request.getRequestDispatcher(path + "/ReviewPayment.jsp").forward(
+		request.getRequestDispatcher(path + "/ReviewPaymentf.jsp").forward(
 				request, response);
 	}
 

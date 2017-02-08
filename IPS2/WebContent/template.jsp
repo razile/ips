@@ -72,20 +72,21 @@
 <form>
 <%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@ include file="connection.jsp" %>
+
 <form action="#">
 <%
 int payerid =Integer.parseInt(session.getAttribute("pyid").toString());
 Connection con = null;
-PreparedStatement ps = null;
+Statement ps = null;
 try
 {
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+con = FactorDBService.getInstance().openConnection();
 String sql = "SELECT Name1,DebtorId,street1,street2,city,state,country,zip from Debtor join Address on Address.SysParentId = Debtor.SysId where Address.ParentTable='DEBTOR' and Debtor.SysId="+payerid;
-ps = con.prepareStatement(sql);
-ResultSet rs = ps.executeQuery(); 
-}finally{}
+ps = con.createStatement();
+ResultSet rs = ps.executeQuery(sql); 
+}finally{
+	FactorDBService.getInstance().releaseConnection(con);
+}
 %>
 
 </form>

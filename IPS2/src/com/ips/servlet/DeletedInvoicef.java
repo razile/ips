@@ -1,10 +1,10 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -33,6 +34,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -49,15 +56,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 /**
- * Servlet implementation class DeletedInvoice
+ * Servlet implementation class DeletedInvoicef
  */
-public class DeletedInvoice extends HttpServlet {
+public class DeletedInvoicef extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public DeletedInvoice() {
+	public DeletedInvoicef() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -81,22 +88,8 @@ public class DeletedInvoice extends HttpServlet {
 		Connection connection = null;
 		String invId = request.getParameter("hiddenId");
 		try {
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// String connectionURL =
-			// "jdbc:mysql://localhost:3306/ipspayment";// newData is the
-			// database
-			String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";// newData
-																					// is
-																					// the
-																					// database
-			// String invId =null;
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
+			connection = SqlServerDBService.getInstance().openConnection();
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
 			response.setContentType("application/pdf"); // Code 1
 			// response.setHeader("Content-Disposition ,filename=\"" +
 			// "text.pdf" + "\"");
@@ -127,18 +120,23 @@ public class DeletedInvoice extends HttpServlet {
 
 			ResultSet rs = null;
 			java.sql.PreparedStatement ps = null;
+			
+			// FACTOR-DEBTOR
 			ps = connection
-					.prepareStatement("SELECT d.Name1 , d.Name2,d.DebtorId,i.InvoiceAmount,i.SysId from Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
+					.prepareStatement("SELECT i.InvoiceAmount,i.SysId, pa.PayerId from PayersAccounts pa join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
 							+ invId);
 			rs = ps.executeQuery();
 			double invAmount = 0;
 			String name1 = "";
 			String debtor = "";
 			// String invId;
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();			
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerId = rs.getString("payerid");
+				Debtor d = debtors.get(payerId);
+				name1 = d.getName1() + " " + d.getName2();
 				invAmount = Double.parseDouble(rs.getString("InvoiceAmount"));
-				debtor = rs.getString("DebtorId");
+				debtor = d.getDebtorId();
 
 			}
 			NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
@@ -174,7 +172,7 @@ public class DeletedInvoice extends HttpServlet {
 			cbe.beginText();
 			cbe.setFontAndSize(bf_cambria, 14);
 
-			String text = "Transaction Deleted";
+			String text = "Transaction supprim�e";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -183,17 +181,17 @@ public class DeletedInvoice extends HttpServlet {
 			cbe.setFontAndSize(bf_cambrial, 10);
 
 			// text ="Payment Date: " + invoicedate;
-			text = "Thank you for using the IPS eCheque service.";
+			text = "Nous vous remercions d�avoir utilis� le service de ch�que �lectronique IPS.";
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
 			y_line2 = y_line2 - 20;
 			// text ="Account number: " + accountnum;
-			text = "Please print this page for your records";
+			text = "Veuillez imprimer cette page pour vos dossiers.";
 			cbe.setFontAndSize(bf_cambrial, 9);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Payer: ";
+			text = "Payeur: ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -202,7 +200,7 @@ public class DeletedInvoice extends HttpServlet {
 					0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Deleted Amount: ";
+			text = "Montant supprim� : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -211,11 +209,11 @@ public class DeletedInvoice extends HttpServlet {
 					0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Deleted Payment Number: ";
+			text = "Num�ro du paiement supprim� : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
-			text = invId;
+			text = "        " + invId;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 190, y_line2,
 					0);
 
@@ -224,7 +222,7 @@ public class DeletedInvoice extends HttpServlet {
 			// Calendar c = new Calendar().getInstance();
 			String timeStamp = sTimeStamp.format(new Date());
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Date and Time: ";
+			text = "Date et heure : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -240,7 +238,7 @@ public class DeletedInvoice extends HttpServlet {
 
 			cbe.setFontAndSize(bf_cambria, 12);
 
-			text = "Deleted Invoice Payments";
+			text = "Paiements de facture supprim�s:";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -253,17 +251,17 @@ public class DeletedInvoice extends HttpServlet {
 
 			PdfPCell c;
 			// cb.setFontAndSize(bf_cambria, 8);
-			c = new PdfPCell(new Paragraph("Supplier", cambria9));
+			c = new PdfPCell(new Paragraph("Fournisseur", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.setBorderColor(new Color(255, 0, 0));
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Invoice No.", cambria9));
+			c = new PdfPCell(new Paragraph("N� de facture", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("PO No.", cambria9));
+			c = new PdfPCell(new Paragraph("N� de bon de commande", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -274,7 +272,7 @@ public class DeletedInvoice extends HttpServlet {
 			 * c.setBorder(Rectangle.NO_BORDER); table.addCell(c);
 			 */
 
-			c = new PdfPCell(new Paragraph("Payment Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant du paiement", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -282,13 +280,19 @@ public class DeletedInvoice extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			CallableStatement cs = connection.prepareCall("{call ipclient(?)}");
+			CallableStatement cs = connection.prepareCall("{call ipclient_m(?)}");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(invId));
 			rs = cs.executeQuery();
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
+			
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
 				// table.addCell(String.valueOf(id));
 				// table.addCell("Amount");
 
@@ -298,15 +302,20 @@ public class DeletedInvoice extends HttpServlet {
 				// table.addCell(c);
 
 				// name="clientid" + counter;
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+				
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
@@ -370,6 +379,8 @@ public class DeletedInvoice extends HttpServlet {
 			// servletOutputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 
 	}

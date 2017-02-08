@@ -63,6 +63,6 @@
 <input type="hidden" id="hiddenId" name="hiddenId"/>
 </form>
 <div id="showtext"></div>
-aaaaaaaaaa
+
 </body>
 </html>

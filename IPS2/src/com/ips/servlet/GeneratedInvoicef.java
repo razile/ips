@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.awt.Color;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.SQLException;
 import java.sql.Connection;
 import javax.servlet.ServletConfig;
@@ -27,6 +27,12 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfWriter;
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -36,8 +42,6 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
-
-import java.util.Properties;
 
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
@@ -92,22 +96,14 @@ public class GeneratedInvoicef extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
+		
 		Connection connection = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-
+			
+			connection = SqlServerDBService.getInstance().openConnection();
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
+			
 			response.setContentType("application/pdf"); // Code 1
 			Document document = new Document();
 			String id = request.getParameter("hiddenId");
@@ -165,7 +161,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			cbe.beginText();
 			cbe.setFontAndSize(bf_cambria, 14);
 
-			String text = "Transaction terminée";
+			String text = "Transaction terminï¿½e";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -176,7 +172,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			cbe.setFontAndSize(bf_cambriaz, 10);
 
 			// text ="Payment Date: " + invoicedate;
-			text = "Nous vous remercions d’avoir utilisé le service de chèque électronique IPS.";
+			text = "Nous vous remercions dï¿½avoir utilisï¿½ le service de chï¿½que ï¿½lectronique IPS.";
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
@@ -196,18 +192,22 @@ public class GeneratedInvoicef extends HttpServlet {
 			PreparedStatement ps = null;
 			// String sql =
 			// "SELECT d.Name1 , d.Name2, d.DebtorId,i.InvoiceDate,i.InvoiceAmount,a.AccountNumber,a.CurrencyType FROM Debtor d join PayersAccounts a on a.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = a.SysId where i.SysId="+id;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			// ps = connection.prepareStatement(sql);
 			rs = cs.executeQuery();
 			String totalpaymentoriginal = null;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+			
+				
 				totalpaymentoriginal = rs.getString("InvoiceAmount");
-				text = "Payeur : " + rs.getString("Name1") + " "
-						+ rs.getString("Name2") + " / ("
-						+ rs.getString("DebtorId").trim() + ")";
-				// text ="Total Amount: $" + totalpayment + " "+ currency ;
+				if (d!=null) {
+					text = "Payer: " + d.getName1() + " "
+							+ d.getName2() + " / ("
+							+ d.getDebtorId().trim() + ")";
+				}
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -220,7 +220,7 @@ public class GeneratedInvoicef extends HttpServlet {
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Expéditeur Bank Account: "
+				text = "Expï¿½diteur Bank Account: "
 						+ rs.getString("TransitNumber") + " "
 						+ rs.getString("BranchCode") + " "
 						+ rs.getString("AccountNumber") + " "
@@ -238,14 +238,14 @@ public class GeneratedInvoicef extends HttpServlet {
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Numéro de confirmation : " + id;
+				text = "Numï¿½ro de confirmation : " + id;
 				y_line2 = y_line2 - 20;
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Numéro de confirmation : "
+				text = "Numï¿½ro de confirmation : "
 						+ rs.getString("InvoiceDate");
 				y_line2 = y_line2 - 20;
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -270,7 +270,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 
-			text = "demande en ligne avant 18:00,votre heure locale le même jour où vous avez fait ";
+			text = "demande en ligne avant 18:00,votre heure locale le mï¿½me jour oï¿½ vous avez fait ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
@@ -297,7 +297,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			table.setTotalWidth(500);
 
 			// cb.setFontAndSize(bf_cambria, 8);
-			Paragraph p = new Paragraph("Factures payées :", cambria12);
+			Paragraph p = new Paragraph("Factures payï¿½es :", cambria12);
 			// p.setFont(cambria9);
 			PdfPCell c = new PdfPCell(p);
 
@@ -314,10 +314,10 @@ public class GeneratedInvoicef extends HttpServlet {
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.setBorderColor(new Color(255, 0, 0));
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("N° de facture", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de facture", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("N° de bon de commande", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de bon de commande", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
 			c = new PdfPCell(new Paragraph("Montant", cambria9));
@@ -339,31 +339,30 @@ public class GeneratedInvoicef extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
-				// table.addCell(String.valueOf(id));
-				// table.addCell("Amount");
-
-				// c = new PdfPCell(new
-				// Paragraph(rs.getString("SysId"),cambrial9));
-				// c.setBorder(Rectangle.NO_BORDER);
-				// table.addCell(c);
-
-				// name="clientid" + counter;
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
@@ -452,7 +451,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			String sender = from; // replace this with a valid sender email
 									// address
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment submitted – " + name1; // this
+			String subject = "eCheque payment submitted ï¿½ " + name1; // this
 																		// will
 																		// be
 																		// the
@@ -592,6 +591,8 @@ public class GeneratedInvoicef extends HttpServlet {
 			// e.printStackTrace(new PrintWriter(errors));
 			// pw2.println(errors.toString());
 
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 

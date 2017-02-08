@@ -81,8 +81,8 @@ var clicked;
 	src='http://cdn.renderedfont.com/js/renderedfont-0.8.min.js#free'></script> -->
 </head>
 <body>
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
-<%@ include file="connection.jsp" %>
+
+
 	<%
 boolean exist =false;
 	String pid2 = (String) request.getParameter("plog");
@@ -103,8 +103,10 @@ ResultSet rs =null;
 PreparedStatement ps = null;
 try
 {
-Class.forName(driverName);
-con =  DriverManager.getConnection(url,user,psw);
+	
+con = SqlServerDBService.getInstance().openConnection();	
+con1 = FactorDBService.getInstance().openConnection();
+
 String sql = "select * from PayersAccounts where payerid ="+debtorid;
  ps = con.prepareStatement(sql);
  rs = ps.executeQuery();
@@ -113,12 +115,11 @@ if (rs.next())
 	exist =true;
 	
 }
- //con = DriverManager.getConnection(url,user,psw);
-con1 = DriverManager.getConnection(url1,user1,psw1);
+
 
  sql = "SELECT Name1, Name2 FROM Debtor d where d.SysId="+debtorid;
-ps = con1.prepareStatement(sql);
-ResultSet rs2 = ps.executeQuery();
+Statement st = con1.createStatement();
+ResultSet rs2 = ps.executeQuery(sql);
 int rowCount=0;
 if(rs2.next()){
     name = rs2.getString("Name1");// + " " + rs.getString("Name2"); 
@@ -126,10 +127,10 @@ if(rs2.next()){
 }
 }catch(Exception e){e.printStackTrace();}
 finally{
-	try{
-	con.close();
-	con1.close();}
-	catch (Exception e2){e2.printStackTrace();}
+	
+		SqlServerDBService.getInstance().releaseConnection(con);
+		FactorDBService.getInstance().releaseConnection(con1);
+	
 }
 session.setAttribute( "pyid", debtorid );
 session.setAttribute( "pynm", name );

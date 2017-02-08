@@ -1,7 +1,7 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
-import java.sql.DriverManager;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Date;
@@ -11,6 +11,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -25,15 +30,12 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
-import java.sql.CallableStatement;
-
-//import com.mysql.jdbc.Connection;
-
 import java.sql.ResultSet;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Servlet implementation class ReportGenerator
@@ -59,17 +61,7 @@ public class AdminReport extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	//String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
-	String connectionURL = "jdbc:jtds:sqlserver://ips-srv049/ipspayment";
-	////String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";
-	String user="sa";
-	String pass = "894xwhtm054ocwso";
-	//String user="root";
-	//String pass = "dbaDEV2013-";
-	//String user="appdev";
-	//String pass = "8Ecrespe";
-	//String user="root";
-	//String pass = "password";
+	
 
 	int norows=0;
 	Document document = null;
@@ -77,9 +69,13 @@ public class AdminReport extends HttpServlet {
 		Connection connection=null;
 		 String  sql;
 		try{
-			   //Class.forName("com.mysql.jdbc.Driver");
-				Class.forName("net.sourceforge.jtds.jdbc.Driver");
-				connection = (Connection) DriverManager.getConnection(connectionURL, user, pass);
+			
+				Map<String,Client> clients = FactorDBService.getInstance().getClients();
+				Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();
+
+				
+				connection = SqlServerDBService.getInstance().openConnection();
+				
 				String dateFrom = request.getParameter("datepickerstart");
 	            String dateEnd = request.getParameter("datepickerend");
 				String payer="";
@@ -145,11 +141,19 @@ public class AdminReport extends HttpServlet {
 						cb.moveTo(62, y_line2);
 						cb.lineTo(100, y_line2);
 						cb.stroke();
-						sql= "SELECT it.InvoiceDate ,ip.InvId, case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT else Client.Name1 COLLATE DATABASE_DEFAULT end "
-								+ "as name1,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName " 
+						
+						// case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT else Client.Name1 COLLATE DATABASE_DEFAULT end as name1
+						// d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName
+						// Left join Factor.dbo.Client  on Client.sysid = ip.payee left join Factor.dbo.Debtor d on pa.payerid = d.Sysid
+						
+						// FACTOR-CLIENT-DEBTOR
+						sql= "SELECT it.InvoiceDate ,ip.InvId, ip.payee,"
+								+ "ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status " 
 								+ "FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.sysid = it.SysAcctId "
-								+ "Left join Factor.dbo.Client  on Client.sysid = ip.payee left join Factor.dbo.Debtor d on pa.payerid = d.Sysid where isnumeric(ip.payee)=1" ;			 
-						//invoicepayment invoicetransaction PayersAccounts Factor.dbo.Client Factor.dbo.Debtor
+								+ "where isnumeric(ip.payee)=1" ;			 
+						
+						// RR - deleted comment 
+						
 						String declined = request.getParameter("declined");
 						String status = "(";
 						boolean useStatus = false;
@@ -177,7 +181,7 @@ public class AdminReport extends HttpServlet {
 							status = status + ")";
 							sql = sql + " and it.status in "+ status;
 						}
-						PdfPTable table = CreateTable("", y_line2,dateFrom,dateEnd,cambria9,cambrial9,sql,true,true);
+						PdfPTable table = CreateTable("", y_line2,dateFrom,dateEnd,cambria9,cambrial9,sql,true,true, clients, debtors);
 						if (norows>12){
 							table.writeSelectedRows(0, 12, 60,  y_line2 , cb);
 							document.newPage();
@@ -215,20 +219,29 @@ public class AdminReport extends HttpServlet {
 						Calendar cd = Calendar.getInstance();
 						cd.setTime(dateFormat.parse(dateEnd));
 					}
-					sql= "select distinct payee,c.name1,c.name2 from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId "
-							+ "join PayersAccounts pa on pa.SysId = it.SysAcctId join Factor.dbo.Client c on c.SysId =ip.payee where isnumeric(ip.payee)=1 "
-							+ "and it.InvoiceDate between ? and ? order by c.name1,c.name2";
+					
+					// FACTOR-CLIENT
+					
+					sql= "select distinct payee from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId "
+							+ "join PayersAccounts pa on pa.SysId = it.SysAcctId  where isnumeric(ip.payee)=1 "
+							+ "and it.InvoiceDate between ? and ? "; 
 					PreparedStatement ps = connection.prepareStatement(sql);
 					ps.setDate(1, dateSqlFrom2);
 					ps.setDate(2, dateSqlEnd2);
 					ResultSet  rs3 = ps.executeQuery();
 					while (rs3.next()){
-						text = rs3.getString("name1") + " " + rs3.getString("name2");
+						String payee = rs3.getString("payee");
+						Client client = clients.get(payee);
+						text = client.getName1() + " " + client.getName2();
 						y_line2 = y_line2 -20;
-						sql= "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName "
+						
+						// FACTOR-DEBTOR
+						
+						// d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName
+						sql= "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status, pa.payerid "
 								+ "FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.sysid = it.SysAcctId "
-								+ "join Factor.dbo.Debtor d on pa.payerid = d.Sysid "
-								+ "where  isnumeric(ip.payee)=1 and ip.payee = " + rs3.getString("payee") ;
+								//+ "join Factor.dbo.Debtor d on pa.payerid = d.Sysid "
+								+ "where  isnumeric(ip.payee)=1 and ip.payee = " + payee ;
 						String declined = request.getParameter("declined");
 						String status = "(";
 						boolean useStatus = false;
@@ -256,7 +269,7 @@ public class AdminReport extends HttpServlet {
 							status = status + ")";
 							sql = sql + " and it.status in "+ status;
 						}
-						PdfPTable table = CreateTable(text,y_line2,dateFrom,dateEnd,cambria9,cambrial9,sql,false,false);
+						PdfPTable table = CreateTable(text,y_line2,dateFrom,dateEnd,cambria9,cambrial9,sql,false,false, clients, debtors);
 						if (norows>12){
 							table.writeSelectedRows(0, 12, 60,  y_line2 , cb);
 							document.newPage();
@@ -287,21 +300,18 @@ public class AdminReport extends HttpServlet {
 				e.printStackTrace();
 		}
     	finally{
-			try{
-				if (connection !=null)
-					connection.close();
-    	    	}catch(Exception e){}
+    		 SqlServerDBService.getInstance().releaseConnection(connection);
+
     	}
 	}
 
-	PdfPTable CreateTable(String name,int y_line2,String dateFrom,String dateEnd, Font cambria9,Font cambrial9,String sql,boolean showDebtor,boolean orderByDate)
+	PdfPTable CreateTable(String name,int y_line2,String dateFrom,String dateEnd, Font cambria9,Font cambrial9,String sql,boolean showDebtor,boolean orderByDate, Map<String,Client> clients, Map<String,Debtor> debtors)
 	{
 		Connection connection=null;
 		norows=0;
 		PdfPTable table=null;
 		try{
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(connectionURL, user, pass);
+			connection = SqlServerDBService.getInstance().openConnection();
 			int columns =0;
 			if (showDebtor){
 				columns=8;
@@ -377,11 +387,15 @@ public class AdminReport extends HttpServlet {
 				String dateEnd2 = dateFormat.format(dt);
 				sql = sql +" and it.InvoiceDate < '"+ dateEnd2 +"' ";
 			}
-			if(orderByDate){
-				sql = sql + " order by it.InvoiceDate";
-			}else{
-				sql = sql + " order by d.name1,d.name2";
-			}
+			
+			sql = sql + " order by it.InvoiceDate";
+			//if(orderByDate){
+			//	sql = sql + " order by it.InvoiceDate";
+			//}
+			//else{
+			//	sql = sql + " order by d.name1,d.name2";
+			// 
+			//}
 			PreparedStatement  ps = connection.prepareStatement(sql);
 			ResultSet  rs = ps.executeQuery();
 			while (rs.next()){
@@ -401,14 +415,25 @@ public class AdminReport extends HttpServlet {
 	            c.setHorizontalAlignment(Element.ALIGN_CENTER);
 	            table.addCell(c);
 	            if (showDebtor){
-	            	p = new  Paragraph(rs.getString("name1"),cambrial9);
+	            	String payee = rs.getString("payee");
+	            	Client client = clients.get(payee);
+	            	
+	            	String nameToUse = client.getName1();
+	            	if (nameToUse == null || nameToUse.length() == 0) {
+	            		nameToUse = payee;
+	            	}
+	            	p = new  Paragraph(nameToUse,cambrial9);
 	            	p.setFont(cambria9);
 	            	c = new PdfPCell (p);
 	            	c.setBorder(Rectangle.NO_BORDER);
 	            	c.setHorizontalAlignment(Element.ALIGN_CENTER);
 	            	table.addCell(c);
 	            }
-	         	p = new  Paragraph(rs.getString("debtorname"),cambrial9);
+	            
+	            String payerid = rs.getString("payerid");
+	            Debtor debtor = debtors.get(payerid);
+	            String debtorname = debtor.getName1() + " " + debtor.getName2() + " (" + debtor.getDebtorId() + ")"; 
+	         	p = new  Paragraph(debtorname,cambrial9);
 	         	p.setFont(cambria9);
 	         	c = new PdfPCell (p);
 	         	c.setBorder(Rectangle.NO_BORDER);
@@ -460,12 +485,9 @@ public class AdminReport extends HttpServlet {
 
 	}
 	catch(Exception e){e.printStackTrace();}
-	finally{try{
-				connection.close();
-				}
-			catch(SQLException e){
-					e.printStackTrace();}
-			}
+	finally{
+		 SqlServerDBService.getInstance().releaseConnection(connection);
+	}
 	return table;
 
 	}

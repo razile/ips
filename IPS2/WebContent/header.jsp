@@ -6,27 +6,22 @@
 <%@ page import="java.util.Calendar"%>
 <%@ page import="javax.servlet.http.*"%>
 <%@ page import="javax.servlet.*"%>
+<%@ page import="com.ips.database.*" %>
 
     
 <% 
 String plog = (String) request.getParameter("pyid");
 if (plog == null)plog= request.getParameter("plog");
 if (plog == null)plog= (String)request.getAttribute("pyid");
-if (plog==null) plog= userid;
+//if (plog==null) plog= userid;
 String pnam = "";
 String piid = plog;
-Connection con2 = null;
-String driverName2 = "com.sybase.jdbc3.jdbc.SybDriver";
-Class.forName(driverName2);
-// String url1 = "jdbc:sybase:Tds:ips-srvsb6.ips-corporation.net:2638/factorsql_dbserver";
-// String user1= "dba"; 
-// String psw1 = "dscsql";
-String url2= "jdbc:jtds:sqlserver://192.168.1.41/ips";
-Connection  con22 = DriverManager.getConnection(url1,user1,psw1);
-Connection consyb =  DriverManager.getConnection(url11,user11,psw11);
-String sql23 = "select debtorid from Debtor where sysid ='" + piid+"'";
-PreparedStatement ps3  = con22.prepareStatement(sql23);
-ResultSet rs3 = ps3.executeQuery();
+
+Connection conH = FactorDBService.getInstance().openConnection();
+
+String sql23 = "select debtorid from Debtor where sysid ='" + piid+"';";
+Statement ps3  = conH.createStatement();
+ResultSet rs3 = ps3.executeQuery(sql23);
 String debtrid = null;
 if(rs3.next()){
     debtrid= rs3.getString("debtorid");// + " " + rs.getString("Name2");
@@ -37,14 +32,13 @@ String dtid= null;
 String dpass= null;
 String dbnm= null;
 String isclnt= null;
-PreparedStatement s=null;
+Statement s=null;
 ResultSet rs2 =null;
 try{
 	//String sql22="SELECT Fac.DebtorId as 'dbid', Fac.Name1 + ' ' + Fac.Name2 as 'dbname',Deb.Password as 'dbpass', isnull(Deb.NewClient,'Y') as 'clnt' FROM dbo.Debtor Deb JOIN Factor.dbo.Debtor Fac ON Deb.OldDebtor_PK = Fac.SysId WHERE Fac.DebtorId =?";
-	String sql22="SELECT DebtorId as 'dbid', Name1 as 'dbname', Status FROM DBA.Debtor where DebtorId=?;";
- 	s = consyb.prepareStatement(sql22);
- 	s.setString(1,debtrid);
- 	rs2 = s.executeQuery();
+	String sql22="SELECT DebtorId as 'dbid', Name1 as 'dbname', Status FROM Debtor where DebtorId=" + debtrid;
+ 	s = conH.createStatement();
+ 	rs2 = s.executeQuery(sql22);
  	while (rs2.next()) {
  		dtid = new String(rs2.getString("dbid"));
  		//dpass = new String (rs2.getString("dbpass"));
@@ -57,8 +51,7 @@ try{
 	finally{
 		s.close();
  		//rs2.close();
- 		con22.close();
- 		//con33.close();	
+ 		FactorDBService.getInstance().releaseConnection(conH);	
  		}
 	//=============================================================
  

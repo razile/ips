@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,8 +11,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 //import net.sourceforge.jtds.jdbc.Driver;
 
+import com.ips.database.DBProperties;
+import com.ips.database.SqlServerDBService;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.io.*;
@@ -22,15 +25,15 @@ import java.io.*;
 //import com.mysql.jdbc.PreparedStatement;
 
 /**
- * Servlet implementation class ProcessAcct
+ * Servlet implementation class ProcessAcct French
  */
-public class ProcessAcct extends HttpServlet {
+public class ProcessAcctf extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public ProcessAcct() {
+	public ProcessAcctf() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -56,34 +59,20 @@ public class ProcessAcct extends HttpServlet {
 		ServletContext context = getServletContext();
 		String ids = "";
 		String acctid = "";
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";// newData
 
 		String act = request.getParameter("act");
 		String payerId = request.getParameter("PayerId");
 		String sql = "aaa=" + act; // is
+		Connection connection = null;
 		try // the
 			// database
 		{
-			Connection connection = null;
+			
 
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			String driverName2 = "net.sourceforge.jtds.jdbc.Driver";
-			Class.forName(driverName2);
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// String driverName2 = "com.mysql.jdbc.Driver";
-
+			connection = SqlServerDBService.getInstance().openConnection();
 			sql = "aaab";
 
-			if (act.equals("Add") || act.equals("Update")) {
+			if (act.equals("Mettre � jour") || act.equals("Update")) {
 				sql = "bbb";
 				acctid = request.getParameter("AcctId");
 
@@ -159,7 +148,7 @@ public class ProcessAcct extends HttpServlet {
 					connection.close();
 					testline = 6;
 				}
-			} else if (act.equals("Edit")) {
+			} else if (act.equals("Modifier")) {
 				response.setContentType("text/html");
 				PrintWriter pw = response.getWriter();
 				String actId = request.getParameter("AcctId");
@@ -177,8 +166,8 @@ public class ProcessAcct extends HttpServlet {
 			// pw2.println("pyid="+payerId);
 			// String path = context.getInitParameter("IPS2Path").toString();
 			request.setAttribute("pyid", payerId.toString());
-			request.getRequestDispatcher("ManageAccounts.jsp").forward(request,
-					response);
+			request.getRequestDispatcher("ManageAccountsf.jsp").forward(
+					request, response);
 		}
 
 		catch (Exception e) {
@@ -197,6 +186,8 @@ public class ProcessAcct extends HttpServlet {
 			pw2.println("class=" + act + "=" + ids + "=" + testline + "SQL="
 					+ sql + "Payerid=" + payerId);
 			pw2.println(errors.toString());
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 
 	}

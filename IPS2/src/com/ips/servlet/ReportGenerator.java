@@ -1,15 +1,21 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
-import java.sql.DriverManager;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Connection;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -25,7 +31,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
 import java.sql.CallableStatement;
-
+import java.io.*;
 //import com.mysql.jdbc.Connection;
 
 import java.sql.ResultSet;
@@ -34,17 +40,18 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Servlet implementation class ReportGenerator
  */
-public class AdminReportf extends HttpServlet {
+public class ReportGenerator extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public AdminReportf() {
+	public ReportGenerator() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -62,16 +69,6 @@ public class AdminReportf extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
-	// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";
-	String user = "sa";
-	String pass = "894xwhtm054ocwso";
-	// String user="root";
-	// String pass = "dbaDEV2013-";
-	// String user="appdev";
-	// String pass = "8Ecrespe";
-	// String user="root";
-	// String pass = "password";
 
 	int norows = 0;
 
@@ -79,35 +76,36 @@ public class AdminReportf extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		Connection connection = null;
 		String sql;
+		PdfWriter writer;
 		try {
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, user, pass);
+			
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();			
+
+			connection = SqlServerDBService.getInstance().openConnection();
 			String dateFrom = request.getParameter("datepickerstart");
 			String dateEnd = request.getParameter("datepickerend");
-			// String acctId = request.getParameter("chkAccount");
-			// String payerid = request.getParameter("payerid");
-			// String sql2 =
-			// "Select * from PayersAccounts pa join Debtor d on pa.payerid = d.Sysid where d.SysId = "
+			String acctId = request.getParameter("chkAccount");
+			String payerid = request.getParameter("payerid");
+			String sql2 = "Select * from PayersAccounts pa where pa.SysId = " + acctId;
 			// + payerid;
-			// CallableStatement cs =
-			// connection.prepareCall("{call padebtor(?,?) }");
-			// PreparedStatement ps2 = connection.prepareStatement(sql2);
-			// cs.setString(1, payerid);
-			// cs.setString(2, acctId);
-			// ResultSet rs2 = cs.executeQuery();//ps2.executeQuery();
+			//CallableStatement cs = connection.prepareCall("exec padebtor ?,? ");
+			PreparedStatement ps2 = connection.prepareStatement(sql2);
+			//cs.setString(1, payerid);
+			//cs.setString(2, acctId);
+			ResultSet rs2 =   ps2.executeQuery(); // cs.executeQuery();// 
 			String payer = "";
 			String account = "";
 			String currency = "";
 			String debtor = "";
-			/*
-			 * if (rs2!=null && rs2.next()) { payer = rs2.getString("name1") +
-			 * " " + rs2.getString("name2"); account =
-			 * rs2.getString("AccountNumber"); currency =
-			 * rs2.getString("CurrencyType"); debtor =
-			 * rs2.getString("DebtorId"); }
-			 */response.setContentType("application/pdf"); // Code 1
+			Debtor d = debtors.get(payerid);
+			if (rs2 != null && rs2.next() && d != null) {
+				payer = d.getName1() + " " + d.getName2();
+				account = rs2.getString("AccountNumber");
+				currency = rs2.getString("CurrencyType");
+				debtor = d.getDebtorId();
+			}
+			response.setContentType("application/pdf"); // Code 1
 			Document document = new Document();
 			// try{
 			BaseFont bf_courier = BaseFont.createFont(BaseFont.COURIER,
@@ -128,8 +126,9 @@ public class AdminReportf extends HttpServlet {
 			Font cambria9 = new Font(bf_cambria, 9);
 			Font cambrial9 = new Font(bf_cambrial, 9);
 			int y_line2 = 800;
-			PdfWriter writer = PdfWriter.getInstance(document,
-					response.getOutputStream()); // Code 2
+			writer = PdfWriter
+					.getInstance(document, response.getOutputStream()); // Code
+																		// 2
 			document.open();
 			// PdfContentByte canvas = writer.getDirectContent();
 			document.add(new Paragraph(""));
@@ -150,9 +149,31 @@ public class AdminReportf extends HttpServlet {
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
+			y_line2 = y_line2 - 20;
+			cb.setFontAndSize(bf_cambrial, 10);
+			// text ="Payment Date: " + invoicedate;
+			text = "Thank you for using the IPS eCheque service.";
+			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			text = "Please print this page for your records.";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
+
+			cb.setFontAndSize(bf_cambria, 10);
+			text = "Payer: ";
+			y_line2 = y_line2 - 20;
+			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
+
+			cb.setFontAndSize(bf_cambrial, 10);
+			text = payer + " /(" + debtor.trim() + ")";
+			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 100, y_line2, 0);
+
+			cb.setFontAndSize(bf_cambria, 10);
+			text = "From Bank Account: ";
+			y_line2 = y_line2 - 20;
+			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
+			cb.setFontAndSize(bf_cambrial, 10);
+			text = account + " " + currency;
+			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 170, y_line2, 0);
 
 			cb.setFontAndSize(bf_cambria, 10);
 			text = "Start Date: ";
@@ -189,7 +210,12 @@ public class AdminReportf extends HttpServlet {
 				cb.moveTo(62, y_line2);
 				cb.lineTo(100, y_line2);
 				cb.stroke();
-				sql = "SELECT it.InvoiceDate ,ip.InvId, case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT  else Client.Name1 COLLATE DATABASE_DEFAULT   end as name1,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId Left join Factor.dbo.Client  on Client.sysid = ip.payee left join Factor.dbo.Debtor d on pa.payerid = d.Sysid  where 1=1";
+				
+				// case when Client.name1 is null then payee COLLATE DATABASE_DEFAULT else Client.Name1 COLLATE DATABASE_DEFAULT end as name1
+				
+				// FACTOR-CLIENT
+				sql = "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount, ip.payee, it.SysId,ip.comments,it.status FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId  where pa.sysid="
+						+ acctId;
 				String declined = request.getParameter("declined");
 				String status = "(";
 				boolean useStatus = false;
@@ -213,7 +239,7 @@ public class AdminReportf extends HttpServlet {
 					sql = sql + " and it.status in " + status;
 				}
 				PdfPTable table = CreateTable("", y_line2, dateFrom, dateEnd,
-						cambria9, cambrial9, sql, true);
+						acctId, cambria9, cambrial9, sql, true, clients);
 				table.writeSelectedRows(0, -1, 60, y_line2, cb);
 
 			} else {
@@ -226,12 +252,7 @@ public class AdminReportf extends HttpServlet {
 				cb.lineTo(115, y_line2);
 				cb.stroke();
 				cb.endText();
-				// sql =
-				// "select distinct payee,c.name1,c.name2 from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.SysId = it.SysAcctId join Client c on c.SysId =ip.payee where it.Active =1 and payerid = "
-				// +payerid;
-
-				// if (dateFrom !=null && dateFrom.length()>0)
-				// sql = sql +" and it.InvoiceDate >= '"+ dateFrom +"' ";
+		
 				String dateEnd2 = null;
 				if (dateEnd != null && dateEnd.length() > 0) {
 
@@ -245,23 +266,28 @@ public class AdminReportf extends HttpServlet {
 					// sql = sql +" and it.InvoiceDate < '"+ dateEnd2 +"' ";
 				}
 
-				sql = "select distinct payee,c.name1,c.name2 from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa on pa.SysId = it.SysAcctId join Factor.dbo.Client c on c.SysId =ip.payee where   it.InvoiceDate >= ? and it.InvoiceDate <?";
-
-				// CallableStatement cs3 =
-				// connection.prepareCall("{call ippaclient(?,?,?)}");
-				PreparedStatement ps = connection.prepareStatement(sql);
-				// ps.setString(1, payerid);
-				ps.setString(1, dateFrom);
-				ps.setString(2, dateEnd2);
-				ResultSet rs3 = ps.executeQuery();
+				CallableStatement cs3 = connection
+						.prepareCall("exec ippaclient_m ?,?,?");
+				cs3.setString(1, payerid);
+				cs3.setString(2, dateFrom);
+				cs3.setString(3, dateEnd2);
+				ResultSet rs3 = cs3.executeQuery();
 				while (rs3.next()) {
-					text = rs3.getString("name1") + " "
-							+ rs3.getString("name2");
+					String payee = rs3.getString("payee");
+					Client c = clients.get(payee);
+					
+					if (c == null)
+						text = payee;
+					else
+						text = c.getName1() + " "
+								+ c.getName2();
 					y_line2 = y_line2 - 20;
-					sql = "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status,d.name1 + ' ' + d.name2 +' (' + d.DebtorId + ')' as DebtorName FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId join Factor.dbo.Debtor d on pa.payerid = d.Sysid   where   ip.payee = "
-							+ rs3.getString("payee");
+					sql = "SELECT it.InvoiceDate ,ip.InvId,ip.Amount,ip.PaymentAmount,it.SysId,ip.comments,it.status FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId join PayersAccounts pa  on pa.sysid = it.SysAcctId where pa.sysid="
+							+ acctId
+							+ " and ip.sysid = "
+							+ rs3.getString("sysid");
 					PdfPTable table = CreateTable(text, y_line2, dateFrom,
-							dateEnd, cambria9, cambrial9, sql, false);
+							dateEnd, acctId, cambria9, cambrial9, sql, false, clients);
 					table.writeSelectedRows(0, -1, 60, y_line2, cb);
 					y_line2 = y_line2 - 10 - norows * 27;
 				}
@@ -279,34 +305,45 @@ public class AdminReportf extends HttpServlet {
 			// pw.println(e1);
 			e1.printStackTrace();
 		} catch (Exception e) {
+			// ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			// PrintWriter pw = new PrintWriter(baos);
+			// e.printStackTrace(pw);
+			// String stackTrace = new String(baos.toByteArray());
+
+			// context.log("Error received:",new
+			// IllegalStateException(stackTrace));
+
+			// response.setContentType("text/html");
+			// PrintWriter pw2 = response.getWriter();
+			// pw2.println("class=");
+			// StringWriter errors = new StringWriter();
+			// e.printStackTrace(new PrintWriter(errors));
+			// pw2.println(errors.toString());
 			e.printStackTrace();
 		} finally {
-			try {
-				if (connection != null)
-					connection.close();
-			} catch (Exception e) {
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 
 	PdfPTable CreateTable(String name, int y_line2, String dateFrom,
-			String dateEnd, Font cambria9, Font cambrial9, String sql,
-			boolean showDebtor) {
+			String dateEnd, String acctId, Font cambria9, Font cambrial9,
+			String sql, boolean showDebtor, Map<String,Client> clients) {
 		Connection connection = null;
 		norows = 0;
 		PdfPTable table = null;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, user, pass);
-
+			connection = SqlServerDBService.getInstance().openConnection();
 			int columns = 0;
 			if (showDebtor) {
-				columns = 8;
-			} else {
 				columns = 7;
+			} else {
+				columns = 6;
 			}
 			table = new PdfPTable(columns);
+			if (showDebtor) {
+				table.setWidths(new float[] { 71f, 71f, 71f, 50f, 50f, 71f, 71f });
+			}
+
 			y_line2 = y_line2 - 20;
 			table.setTotalWidth(500);
 			table.setSpacingBefore(y_line2);
@@ -347,18 +384,11 @@ public class AdminReportf extends HttpServlet {
 
 				table.addCell(c);
 			}
-			p = new Paragraph("Debtor", cambria9);
-			p.setFont(cambria9);
-			c = new PdfPCell(p);
-			c.setBorder(Rectangle.NO_BORDER);
-			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
-			table.addCell(c);
-
 			p = new Paragraph("Amount", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
-			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+			c.setHorizontalAlignment(Element.ALIGN_CENTER);
 			table.addCell(c);
 			/*
 			 * p = new Paragraph("Discount/ credit",cambria9);
@@ -369,12 +399,13 @@ public class AdminReportf extends HttpServlet {
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
-			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
+			c.setHorizontalAlignment(Element.ALIGN_CENTER);
 			table.addCell(c);
 			p = new Paragraph("Confirmation No.", cambria9);
 			p.setFont(cambria9);
 			c = new PdfPCell(p);
 			c.setBorder(Rectangle.NO_BORDER);
+			// c.
 			table.addCell(c);
 			p = new Paragraph("Status", cambria9);
 			p.setFont(cambria9);
@@ -425,7 +456,16 @@ public class AdminReportf extends HttpServlet {
 
 				table.addCell(c);
 				if (showDebtor) {
-					p = new Paragraph(rs.getString("name1"), cambrial9);
+					
+	            	String payee = rs.getString("payee");
+	            	Client client = clients.get(payee);
+	            	
+	            	String nameToUse = client.getName1();
+	            	if (nameToUse == null || nameToUse.length() == 0) {
+	            		nameToUse = payee;
+	            	}
+	            	
+					p = new Paragraph(nameToUse, cambrial9);
 					p.setFont(cambria9);
 					c = new PdfPCell(p);
 					c.setBorder(Rectangle.NO_BORDER);
@@ -433,13 +473,6 @@ public class AdminReportf extends HttpServlet {
 
 					table.addCell(c);
 				}
-				p = new Paragraph(rs.getString("debtorname"), cambrial9);
-				p.setFont(cambria9);
-				c = new PdfPCell(p);
-				c.setBorder(Rectangle.NO_BORDER);
-				c.setHorizontalAlignment(Element.ALIGN_CENTER);
-				table.addCell(c);
-
 				NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
 				Double d = Double.parseDouble(rs.getString("Amount"));
 				String cur = fmt.format(d);
@@ -493,13 +526,8 @@ public class AdminReportf extends HttpServlet {
 			table.completeRow();
 
 		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 		return table;
 

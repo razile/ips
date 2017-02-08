@@ -11,6 +11,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@ page import="com.ips.model.*" %>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -482,23 +483,22 @@ function show_box()
 <body>
 <%
 String userid = (String)request.getParameter("pyid"); //(String)session.getAttribute("pyid");
- String userid1 = (String)request.getParameter("id"); //(String)session.getAttribute("id");
+String userid1 = (String)request.getParameter("id"); //(String)session.getAttribute("id");
 
-       if (userid==null){
-               userid = (String) request.getAttribute("pyid");
-               if (userid==null){
-		userid = userid1;}
+if (userid==null) userid = (String) request.getAttribute("pyid");
+if (userid==null) userid = userid1;
+    
        // response.sendRedirect("https://payer.secure.invoicepayment.ca:8443/ipspayers/index.htm");
-       }
+       
 %>
 
 
 <%@include file='header.jsp'%>
 <%@include file='sidebar.jsp'%>
 <form name="makePayment" id="form" action="InvoicePayment" method="post">
-<%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
 
-<%@ include file="connection.jsp" %>
+
+
 <div id="fake_box">
 	</div>
 
@@ -523,33 +523,37 @@ int  payerid=Integer.parseInt(userid);
 try
 {
 	
-Class.forName(driverName);
-con = DriverManager.getConnection(url,user,psw);
+con = SqlServerDBService.getInstance().openConnection();
 String sql = "SELECT SysId,AccountNumber,CurrencyType FROM PayersAccounts p where p.Active=1 and p.PayerId="+payerid;
 ps = con.prepareStatement(sql);
 rs = ps.executeQuery(); 
 String act = request.getParameter("check");
 %>
 
-<select style="width:200px" name="account" id="account"  onchange=<%="showAccount(this.value,"+ payerid  +")"%>  >
+<select style="width:200px" name="account" id="account"  onchange=<%="showAccount(this.value,"+ payerid  +")"%>>
 <option value="0">Select Account</option>
-<% while(rs.next()){ %>
-<option value=<%= rs.getString("SysId")%>> <% String acctName = rs.getString("AccountNumber") + " - " + rs.getString("CurrencyType");%><%=acctName %></option>
+<% 
+while (rs.next()) {
+	String acctName = rs.getString("AccountNumber") + " - " + rs.getString("CurrencyType");
+	String sysId = rs.getString("SysId");
+%>
+
+
+<option value=<%=sysId%>><%=acctName%></option>
 
 <% 
-}//while
-String email1="";
-String email2="";
-CallableStatement cs = con.prepareCall("exec Get_Emails ? ");
+}
+	String email1="";
+	String email2="";
 	String spayerid = Integer.toString(payerid);
-    cs.setString(1, spayerid);
-	rs = cs.executeQuery();
-		while (rs.next()){
-		email1=rs.getString("ContactEMail");
-		email2=rs.getString("Contact2EMail");
-		//name =rs.getString("name1") + " " + rs.getString("name2");
-	}	
- 
+	Debtor dcont = FactorDBService.getInstance().getEmails(spayerid);
+	email1 = dcont.getContactEmail();
+	email2 = dcont.getContact2Email();
+	} catch (Exception e) {
+		System.err.print(e.getMessage());
+	} finally {
+		SqlServerDBService.getInstance().releaseConnection(con);
+	}
 %>
 </select></td><td style="height:20px"></td></tr>
 </table></td>
@@ -559,9 +563,7 @@ CallableStatement cs = con.prepareCall("exec Get_Emails ? ");
 see this confirmation, please make sure to allow<br> pop-ups within your browser.</td></tr>
 <tr><td height=10px></td></tr>
 <tr><td style="vertical-align:top;text-align:left;" colspan=2>
- <% }
-catch(Exception e){}
-finally{}%>
+
 <table   id="lowertbl" border=0><tr><td >
    <!--  <table border=0px cellpadding=0 cellspacing=0 style="vertical-align:top;text-align:left;width:100%"><tr style="height:10px"><td style="height:10px">
         <h4>Pay to the order of Invoice Payment Systems</h4>
@@ -603,22 +605,29 @@ finally{}%>
      
      <select name=payee id=payee>
     <% 
-     	// String driverName3 = "com.sybase.jdbc3.jdbc.SybDriver"; 
-     	//Class.forName(driverName3);
-     //	Connection consyb =  DriverManager.getConnection(url11,user11,psw11);
-     	String sql22="SELECT Cli.Name1, Cli.SysId FROM Debtor Deb JOIN Account Acc ON Acc.SysDtrId = Deb.Sysid JOIN Relation Rel ON Rel.Sysid = Acc.SysRelId JOIN Client Cli ON Cli.SysId = Rel.SysClientId WHERE Deb.SysId = ? ORDER BY 1";
- 	 	s = consyb.prepareStatement(sql22);
- 	 	s.setString(1,Integer.toString(payerid));
- 		String id ="";
- 		String clientName = "";
- 		rs2 = s.executeQuery();
- 		while (rs2.next()) {
- 			id = new String(rs2.getString("SysId"));
- 			clientName = new String (rs2.getString("Name1"));
+    
+    	Connection sybconn = FactorDBService.getInstance().openConnection();
+   	    String sql22="SELECT Cli.Name1, Cli.SysId FROM Debtor Deb JOIN Account Acc ON Acc.SysDtrId = Deb.Sysid JOIN Relation Rel ON Rel.Sysid = Acc.SysRelId JOIN Client Cli ON Cli.SysId = Rel.SysClientId WHERE Deb.SysId = " + payerid + " ORDER BY 1";
+ 	 	try {
+   	    	Statement st = sybconn.createStatement();
+ 			String id ="";
+ 			String clientName = "";
+ 			ResultSet rsf = st.executeQuery(sql22);
+ 			while (rsf.next()) {
+ 			id = new String(rsf.getString("SysId"));
+ 			clientName = new String (rsf.getString("Name1"));
  		
      %>
      <option value="<%=id.trim()%>"><%=clientName%></option>
-     <%}%>
+     <%
+     	}
+     
+     } catch (Exception e) {
+     	e.printStackTrace();
+     } finally {
+    	 FactorDBService.getInstance().releaseConnection(sybconn);
+     }
+     %>
      </select>
      <!--<input name="payee" id="payee" type=text style="width:250px">
      -->
@@ -656,6 +665,7 @@ finally{}%>
  </table>
 </div>
 </form>
+
 
 <%@include file='footer.jsp'%>
 

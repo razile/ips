@@ -12,6 +12,7 @@
 <%@ page import="java.text.*"%>
 <%@ page import="java.text.NumberFormat"%>
 <%@ page import="java.util.Locale"%>
+<%@page import="com.ips.database.*"%>
 <%@ page buffer="16kb"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
@@ -21,17 +22,16 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">  
     </head>  
     <body>
-    <%! String driverName = "net.sourceforge.jtds.jdbc.Driver";%>
-<%@ include file="connection.jsp" %>
+   
      <%  
       String area = request.getParameter("accountId");  
      String ftype = request.getParameter("accountId");  
         response.setContentType("text/html");  
         response.setHeader("Cache-Control", "no-cache");  
+        Connection con = null;
         try {  
             String buffer = "<div>";  
-            Class.forName(driverName);
-            Connection con = DriverManager.getConnection(url,user,psw);
+          	con = FactorDBService.getInstance().openConnection();
             //Connection con = ConnectionManager.getConnection();  
             Statement stmt = con.createStatement();  
             String query = "Select f.Flat_No,a.Building_Name,t.Flat_Type from tblflat f,tblarea a,tblflattype t where f.Area_Code=a.Area_Code AND f.Flat_Code=t.Flat_Code AND f.Status ='"+ftype+"' AND Area_Name='" + area + "'";  
@@ -47,7 +47,9 @@
             response.getWriter().println(buffer);  
         } catch (Exception e) {  
             response.getWriter().println(e);  
-        }  
+        }  finally {
+        	FactorDBService.getInstance().releaseConnection(con);
+        }
         %>  
     </body>  
 </html>  

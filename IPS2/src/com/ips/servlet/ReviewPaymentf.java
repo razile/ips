@@ -1,10 +1,10 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Connection;
@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -38,6 +39,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -54,13 +61,13 @@ import com.lowagie.text.pdf.PdfWriter;
 /**
  * Servlet implementation class ReviewPayment
  */
-public class ReviewPayment extends HttpServlet {
+public class ReviewPaymentf extends HttpServlet {
 	public static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public ReviewPayment() {
+	public ReviewPaymentf() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -69,7 +76,8 @@ public class ReviewPayment extends HttpServlet {
 	public javax.servlet.ServletContext sc = null;
 
 	public void init(ServletConfig servletConfig) throws ServletException {
-		this.adminEmail = servletConfig.getInitParameter("emailDelete");
+		// this.adminEmail = servletConfig.getInitParameter("emailDelete");
+		adminEmail = "echeque@invoicepayment.ca";
 		sc = servletConfig.getServletContext();
 
 	}
@@ -89,9 +97,7 @@ public class ReviewPayment extends HttpServlet {
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
+
 		Connection connection = null;
 		try {
 			String act = request.getParameter("act");
@@ -104,18 +110,12 @@ public class ReviewPayment extends HttpServlet {
 				act = "Approve";
 			if (deleteAdmin != null && deleteAdmin.equals("on"))
 				act = "DeleteAdmin";
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
 
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();	
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
+
+			connection = SqlServerDBService.getInstance().openConnection();
+			
 			javax.servlet.ServletContext context = null;
 			context = sc;
 			String email1 = "";
@@ -145,28 +145,26 @@ public class ReviewPayment extends HttpServlet {
 					payerid = rs.getString("payerid");
 					amount = rs.getString("InvoiceAmount");
 				}
+				// FACTOR-CLIENT
 				ps2 = connection
-						.prepareStatement("SELECT Name1,Name2 FROM  Factor.dbo.Client c join invoicepayment ip on ip.payee = c.SysId  join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
+						.prepareStatement("SELECT ip.payee FROM invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
 				ps2.setString(1, selected);
 				rs = ps2.executeQuery();
 
 				while (rs.next()) {
-					client = client + rs.getString("Name1") + " "
-							+ rs.getString("Name2") + ", ";
+					String payee = rs.getString("payee");
+					Client c = clients.get(payee);
+					client = client + c.getName1() + " "
+							+ c.getName2() + ", ";
 				}
 				if (client.length() > 0) {
 					client = client.substring(0, client.length() - 2);
 				}
 
-				CallableStatement cs = connection
-						.prepareCall("exec Get_Emails ? ");
-				cs.setString(1, payerid);
-				rs = cs.executeQuery();
-				while (rs.next()) {
-					email1 = rs.getString("ContactEMail");
-					email2 = rs.getString("Contact2EMail");
-					name = rs.getString("name1") + " " + rs.getString("name2");
-				}
+				Debtor d = FactorDBService.getInstance().getEmails(payerid);
+				email1 = d.getContactEmail();
+				email2 = d.getContact2Email();
+				name= d.getName1() + " " + d.getName2();
 				// if (path.length()>0){
 				// path = "/" + path;}
 				// path = path + "/BackendReview.jsp";
@@ -175,7 +173,7 @@ public class ReviewPayment extends HttpServlet {
 				// (String invId,String name,String comment,String
 				// email,Connection con){
 				ByteArrayOutputStream outputStream = GetDocument(connection,
-						selected);
+						selected, clients, debtors);
 				if (email1.length() > 0)
 					SendDebtorEmail(outputStream, selected, name, comment,
 							email1);
@@ -186,7 +184,7 @@ public class ReviewPayment extends HttpServlet {
 						connection, outputStream);
 				path = context.getInitParameter("IPS2Path").toString();
 				request.setAttribute("pyid", pyid);
-				request.getRequestDispatcher("BackendReview.jsp").forward(
+				request.getRequestDispatcher("BackendReviewf.jsp").forward(
 						request, response);
 				// response.sendRedirect( path);
 			} else if (act.equals("Approve")) {
@@ -208,37 +206,36 @@ public class ReviewPayment extends HttpServlet {
 					payerid = rs.getString("payerid");
 					amount = rs.getString("InvoiceAmount");
 				}
+				
+				// FACTOR-CLIENT
 				ps2 = connection
-						.prepareStatement("SELECT Name1,Name2 FROM  Factor.dbo.Client c join invoicepayment ip on ip.payee = c.SysId  join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
+						.prepareStatement("SELECT ip.payee from invoicepayment ip join invoicetransaction it on it.SysId = ip.InvoiceTransactionId  where it.sysid =?");
 				ps2.setString(1, selected);
 				rs = ps2.executeQuery();
 
 				while (rs.next()) {
-					client = client + rs.getString("Name1") + " "
-							+ rs.getString("Name2") + ", ";
+					String payee = rs.getString("payee");
+					Client c = clients.get(payee);
+					client = client + c.getName1() + " "
+							+ c.getName2() + ", ";
 				}
 				if (client.length() > 0) {
 					client = client.substring(0, client.length() - 2);
 				}
 
-				CallableStatement cs = connection
-						.prepareCall("exec Get_Emails ? ");
-				cs.setString(1, payerid);
-				rs = cs.executeQuery();
-				while (rs.next()) {
-					email1 = rs.getString("ContactEMail");
-					email2 = rs.getString("Contact2EMail");
-					name = rs.getString("name1") + " " + rs.getString("name2");
-				}
+				Debtor d = FactorDBService.getInstance().getEmails(payerid);
+				email1 = d.getContactEmail();
+				email2 = d.getContact2Email();
+				name= d.getName1() + " " + d.getName2();
 				// if (path.length()>0){
 				// path = "/" + path;}
-				path = "BackendReview.jsp";
+				path = "BackendReviewf.jsp";
 				// String invId,String comment,String name,String client,String
 				// amount,Connection con
 				// (String invId,String name,String comment,String
 				// email,Connection con){
 				ByteArrayOutputStream outputStream = GetDocumentApproved(
-						connection, selected);
+						connection, selected, clients, debtors);
 				if (email1.length() > 0)// ByteArrayOutputStream
 										// outputStream,String invId,String
 										// name,String comment,String email
@@ -253,7 +250,7 @@ public class ReviewPayment extends HttpServlet {
 				// response.sendRedirect( path);
 				path = context.getInitParameter("IPS2Path").toString();
 				request.setAttribute("pyid", pyid);
-				request.getRequestDispatcher("BackendReview.jsp").forward(
+				request.getRequestDispatcher("BackendReviewf.jsp").forward(
 						request, response);
 
 			} else if (act.equals("DeleteAdmin")) {
@@ -277,10 +274,11 @@ public class ReviewPayment extends HttpServlet {
 				// r.forward(request, response);
 				request.setAttribute("pyid", pyid);
 				request.setAttribute("d", selected);
-				request.getRequestDispatcher("BackendReview.jsp").forward(
+				request.getRequestDispatcher("BackendReviewf.jsp").forward(
 						request, response);
 				// response.sendRedirect( path);
-			} else if (act.equals("Delete")) {
+			} else if (act.equals("Delete") || (act.equals("Supprimer"))) {
+				// else if (act.equals("Supprimer")){
 				String selected = request.getParameter("check");
 				if (selected != null)
 					selected = selected.trim();
@@ -293,34 +291,30 @@ public class ReviewPayment extends HttpServlet {
 				// {path = "/" + path;}
 				path = context.getInitParameter("IPS2Path").toString();
 				// path = path + "/ReviewPayment.jsp?d="+selected;
-				SendEmail(selected, accountid, connection);
+				SendEmail(selected, accountid, connection, clients);
 				// r.forward(request, response);
 				request.setAttribute("pyid", pyid);
 				request.setAttribute("d", selected);
-				request.getRequestDispatcher("ReviewPayment.jsp").forward(
+				request.getRequestDispatcher("ReviewPaymentf.jsp").forward(
 						request, response);
 				// response.sendRedirect( path);
 			} else if (act.equals("Modify")) {
 				String[] check = request.getParameterValues("check");
 				request.setAttribute("transId", check[0]);
-				request.getRequestDispatcher("UpdatePayment.jsp?" + path)
+				request.getRequestDispatcher("UpdatePaymentf.jsp?" + path)
 						.forward(request, response);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				connection.close();
-			} catch (Exception e2) {
-				e2.printStackTrace();
-			}
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 		// request.getRequestDispatcher("/ReviewPayment.jsp").forward(request,
 		// response);
 	}
 
-	public ByteArrayOutputStream GetDocument(Connection connection, String id) {
+	public ByteArrayOutputStream GetDocument(Connection connection, String id, Map<String,Client> clients, Map<String,Debtor> debtors) {
 
 		Document document = new Document();
 		ByteArrayOutputStream outputStream = null;
@@ -359,14 +353,14 @@ public class ReviewPayment extends HttpServlet {
 			int y_line2 = 800;
 			cbe.beginText();
 			cbe.setFontAndSize(bf_cambria, 14);
-			String text = "Transaction Declined";
+			String text = "Transaction refusï¿½";
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 20;
 			cbe.setFontAndSize(bf_cambriaz, 10);
-			text = "Thank you for using the IPS eCheque service.";
+			text = "Nous vous remercions dï¿½avoir utilisï¿½ le service de chï¿½que ï¿½lectronique IPS.";
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 20;
-			text = "Please print this page for your records";
+			text = "Veuillez imprimer cette page pour vos dossiers.";
 			cbe.setFontAndSize(bf_cambriaz, 9);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 20;
@@ -374,27 +368,32 @@ public class ReviewPayment extends HttpServlet {
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 
 			String totalpaymentoriginal = null;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+			
+				
 				totalpaymentoriginal = rs.getString("InvoiceAmount");
-				text = "Payer: " + rs.getString("Name1") + " "
-						+ rs.getString("Name2") + " / ("
-						+ rs.getString("DebtorId").trim() + ")";
+				if (d!=null) {
+					text = "Payeur: " + d.getName1() + " "
+							+ d.getName2() + " / ("
+							+ d.getDebtorId().trim() + ")";
+				}
 				// text ="Total Amount: $" + totalpayment + " "+ currency ;
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
-				text = "Declined Amount: " + totalpaymentoriginal + " "
+				text = "Montant refusï¿½ : " + totalpaymentoriginal + " "
 						+ rs.getString("CurrencyType");// rs.getString("InvoiceAmount")
 				y_line2 = y_line2 - 20;
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Declined Payment Number: " + id;
+				text = "Numï¿½ro du paiement refusï¿½ : " + id;
 				y_line2 = y_line2 - 20;
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
@@ -404,7 +403,7 @@ public class ReviewPayment extends HttpServlet {
 				SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
 						"yyyy/MM/dd HH:mm");
 				String datep = simpleDateFormat.format(date2);
-				text = "Date and Time: " + datep;
+				text = "Date et heure : " + datep;
 				y_line2 = y_line2 - 20;
 
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -416,7 +415,7 @@ public class ReviewPayment extends HttpServlet {
 
 			}
 
-			text = "Declined Invoice Payments:";
+			text = "Paiements de facture refusï¿½s :";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 5;
@@ -442,17 +441,17 @@ public class ReviewPayment extends HttpServlet {
 			// c = new PdfPCell(new Paragraph("Confirmation No.",cambria9));
 			// c.setBorder(Rectangle.NO_BORDER);
 			// table.addCell(c);
-			PdfPCell c = new PdfPCell(new Paragraph("Supplier", cambria9));
+			PdfPCell c = new PdfPCell(new Paragraph("Fournisseur", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.setBorderColor(new Color(255, 0, 0));
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Invoice No.", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de facture", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("PO No.", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de bon de commande", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -463,7 +462,7 @@ public class ReviewPayment extends HttpServlet {
 			 * c.setBorder(Rectangle.NO_BORDER); table.addCell(c);
 			 */
 
-			c = new PdfPCell(new Paragraph("Payment Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant du paiement", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -471,31 +470,30 @@ public class ReviewPayment extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Factor.dbo.Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			cs = connection.prepareCall("{call ipclient(?)}");
+			cs = connection.prepareCall("{call ipclient_m(?)}");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
-				// table.addCell(String.valueOf(id));
-				// table.addCell("Amount");
-
-				// c = new PdfPCell(new
-				// Paragraph(rs.getString("SysId"),cambrial9));
-				// c.setBorder(Rectangle.NO_BORDER);
-				// table.addCell(c);
-
-				// name="clientid" + counter;
-				String name = rs.getString("name1");
-				if (name == null)
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
 					name = rs.getString("payeeextra");
+				} else {
+					name = cl.getName1();
+				}
+		
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
-
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
@@ -560,7 +558,7 @@ public class ReviewPayment extends HttpServlet {
 	}
 
 	public ByteArrayOutputStream GetDocumentApproved(Connection connection,
-			String id) {
+			String id, Map<String,Client> clients, Map<String,Debtor> debtors) {
 
 		Document document = new Document();
 		ByteArrayOutputStream outputStream = null;
@@ -599,14 +597,14 @@ public class ReviewPayment extends HttpServlet {
 			int y_line2 = 800;
 			cbe.beginText();
 			cbe.setFontAndSize(bf_cambria, 14);
-			String text = "Transaction Approved";
+			String text = "Transaction approuvï¿½e";
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 20;
 			cbe.setFontAndSize(bf_cambriaz, 10);
-			text = "Thank you for using the IPS eCheque service.";
+			text = "Nous vous remercions dï¿½avoir utilisï¿½ le service de chï¿½que ï¿½lectronique IPS.";
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 20;
-			text = "Please print this page for your records";
+			text = "Veuillez imprimer cette page pour vos dossiers.";
 			cbe.setFontAndSize(bf_cambriaz, 9);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 20;
@@ -614,27 +612,32 @@ public class ReviewPayment extends HttpServlet {
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 
 			String totalpaymentoriginal = null;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+			
+				
 				totalpaymentoriginal = rs.getString("InvoiceAmount");
-				text = "Payer: " + rs.getString("Name1") + " "
-						+ rs.getString("Name2") + " / ("
-						+ rs.getString("DebtorId").trim() + ")";
+				if (d!=null) {
+					text = "Payeur: " + d.getName1() + " "
+							+ d.getName2() + " / ("
+							+ d.getDebtorId().trim() + ")";
+				}
 				// text ="Total Amount: $" + totalpayment + " "+ currency ;
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
-				text = "Approved Amount: " + totalpaymentoriginal + " "
+				text = "Montant approuvï¿½ : " + totalpaymentoriginal + " "
 						+ rs.getString("CurrencyType");// rs.getString("InvoiceAmount")
 				y_line2 = y_line2 - 20;
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 
-				text = "Approved Payment Number: " + id;
+				text = "Numï¿½ro du paiement approuvï¿½ : " + id;
 				y_line2 = y_line2 - 20;
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
@@ -644,7 +647,7 @@ public class ReviewPayment extends HttpServlet {
 				SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
 						"yyyy/MM/dd HH:mm");
 				String datep = simpleDateFormat.format(date2);
-				text = "Date and Time: " + datep;
+				text = "Date et heure : " + datep;
 				y_line2 = y_line2 - 20;
 
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -656,7 +659,7 @@ public class ReviewPayment extends HttpServlet {
 
 			}
 
-			text = "Approved Invoice Payments:";
+			text = "Paiements de facture approuvï¿½s :";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			y_line2 = y_line2 - 5;
@@ -682,17 +685,17 @@ public class ReviewPayment extends HttpServlet {
 			// c = new PdfPCell(new Paragraph("Confirmation No.",cambria9));
 			// c.setBorder(Rectangle.NO_BORDER);
 			// table.addCell(c);
-			PdfPCell c = new PdfPCell(new Paragraph("Supplier", cambria9));
+			PdfPCell c = new PdfPCell(new Paragraph("Fournisseur", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.setBorderColor(new Color(255, 0, 0));
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Invoice No.", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de facture", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("PO No.", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de bon de commande", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -703,7 +706,7 @@ public class ReviewPayment extends HttpServlet {
 			 * c.setBorder(Rectangle.NO_BORDER); table.addCell(c);
 			 */
 
-			c = new PdfPCell(new Paragraph("Payment Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant du paiement", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -711,31 +714,30 @@ public class ReviewPayment extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Factor.dbo.Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
-				// table.addCell(String.valueOf(id));
-				// table.addCell("Amount");
-
-				// c = new PdfPCell(new
-				// Paragraph(rs.getString("SysId"),cambrial9));
-				// c.setBorder(Rectangle.NO_BORDER);
-				// table.addCell(c);
-
-				// name="clientid" + counter;
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+		
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
-
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
@@ -820,31 +822,33 @@ public class ReviewPayment extends HttpServlet {
 		final String login = "webserver";
 		final String password = "testing";
 
-		props.setProperty("mail.smtp.auth", "false");
+		props.setProperty("mail.smtp.auth", "true");
 		props.setProperty("mail.smtp.starttls.enable", "true");
 		try {
-			Session session = Session.getInstance(props, new Authenticator() {
-				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(login, password);
-				}
-			});
+			Session session = Session.getDefaultInstance(props,
+					new Authenticator() {
+						protected PasswordAuthentication getPasswordAuthentication() {
+							return new PasswordAuthentication(login, password);
+						}
+					});
 			// String from="webserver@invoicepayment.ca";
 			String from = "echeque@invoicepayment.ca";
 			String to = email;
-			// String to="invoicefollowup@invoicepayment.ca";
-			// String to="youssef.shatila@systembind.com";
-			String subject = "Invoice Payment No. " + invId + " Declined";
+			// //String to="invoicefollowup@invoicepayment.ca";
+			// // String to="youssef.shatila@systembind.com";
+
+			String subject = "Paiement de la facture nï¿½  " + invId + " refusï¿½";
 
 			MimeMultipart multipart = new MimeMultipart("related");
 			BodyPart messageBodyPart = new MimeBodyPart();
 
-			String message = "Dear " + name + "<br>";
+			String message = "ï¿½ l attention de " + name + "<br>";
 			message = message
-					+ "We are sending this email regarding a payment submitted through the IPS eCheque. <br>Unfortunately, this payment has been declined by the bank.<br><br>";
-			message = message + "     Reason: " + comment;
+					+ "Le prï¿½sent message concerne le paiement remis par chï¿½que ï¿½lectronique IPS. <br>Malheureusement, ce paiement a ï¿½tï¿½ refusï¿½ par la banque. <br><br>";
+			message = message + "     Motif : " + comment;
 			message = message + "<br><br>";
 			message = message
-					+ "Please log in again to re-submit this payment and close the IPS invoice(s) payable in question. <br>";
+					+ "Nous vous demandons de bien vouloir soumettre ï¿½ nouveau ce paiement et de clore la facture dï¿½bitrice IPS en question. <br>";
 			// message = message +
 			// "Thank you for your time & best regards,<br><br>";
 			// message = message +
@@ -864,7 +868,7 @@ public class ReviewPayment extends HttpServlet {
 					outputStream.toByteArray(), "application/pdf");
 			MimeBodyPart pdfBodyPart = new MimeBodyPart();
 			pdfBodyPart.setDataHandler(new DataHandler(dataSource));
-			pdfBodyPart.setFileName("TransactionDeclined_" + invId + ".pdf");
+			pdfBodyPart.setFileName("Transaction_" + invId + ".pdf");
 
 			// add it
 			multipart.addBodyPart(messageBodyPart);
@@ -914,36 +918,38 @@ public class ReviewPayment extends HttpServlet {
 		final String login = "webserver";
 		final String password = "testing";
 
-		props.setProperty("mail.smtp.auth", "false");
+		props.setProperty("mail.smtp.auth", "true");
 		props.setProperty("mail.smtp.starttls.enable", "true");
 		try {
-			Session session = Session.getInstance(props, new Authenticator() {
-				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(login, password);
-				}
-			});
+			Session session = Session.getDefaultInstance(props,
+					new Authenticator() {
+						protected PasswordAuthentication getPasswordAuthentication() {
+							return new PasswordAuthentication(login, password);
+						}
+					});
 			String from = "echeque@invoicepayment.ca";
 			// String from="webserver@invoicepayment.ca";
 			String to = email;
+
 			// String to="invoicefollowup@invoicepayment.ca";
 			// String to="youssef.shatila@systembind.com";
-			String subject = "Invoice Payment No. " + invId + " Approved";
+			String subject = "Paiement de la facture nï¿½ " + invId + " approuvï¿½";
 
 			MimeMultipart multipart = new MimeMultipart("related");
 			BodyPart messageBodyPart = new MimeBodyPart();
 
-			String message = "Dear " + name + "<br>";
+			String message = "ï¿½ l attention de " + name + "<br>";
 			// message = message +
 			// "We are sending this email to confirm that Payment # " + invId +
 			// " submitted through the IPS eCheque has been<br>approved by the bank.<br><br>";
 			message = message
-					+ "We are sending this email to confirm that Payment # "
+					+ "Nous vous faisons parvenir ce message pour confirmer que le paiement # "
 					+ invId
-					+ " submitted through the IPS eCheque has been approved by the bank.<br><br>";
+					+ " remis par chï¿½que ï¿½lectronique IPS a ï¿½tï¿½ approuvï¿½ par la banque.<br><br>";
 			// message = message + "     Reason: " + comment;
 			// message = message + "<br><br>";
 			message = message
-					+ "Please allow us some time, typically by the end of the current business day before you can see this payment applied to the invoice payable(s) in question.<br>";
+					+ "Nous vous demandons de bien vouloir nous accorder du temps, en gï¿½nï¿½ral dï¿½ici la fin du jour ouvrable en cours, pour que ce paiement soit appliquï¿½ ï¿½ la facture dï¿½bitrice en question.<br>";
 			// message = message +
 			// "Thank you for your time & best regards,<br><br>";
 			// message = message +
@@ -963,7 +969,8 @@ public class ReviewPayment extends HttpServlet {
 					outputStream.toByteArray(), "application/pdf");
 			MimeBodyPart pdfBodyPart = new MimeBodyPart();
 			pdfBodyPart.setDataHandler(new DataHandler(dataSource));
-			pdfBodyPart.setFileName("TransactionApproved_" + invId + ".pdf");
+			// pdfBodyPart.setFileName("Transaction_" +invId + ".pdf");
+			pdfBodyPart.setFileName("TransactionApprouvï¿½_" + invId + ".pdf");
 
 			// add it
 			multipart.addBodyPart(messageBodyPart);
@@ -1011,13 +1018,13 @@ public class ReviewPayment extends HttpServlet {
 		final String login = "webserver";
 		final String password = "testing";
 
-		props.setProperty("mail.smtp.auth", "false");
+		props.setProperty("mail.smtp.auth", "true");
 		props.setProperty("mail.smtp.starttls.enable", "true");
 
 		// final String login = "webserver";
 		// final String password = "testing";
 		try {
-			Session session = Session.getInstance(props,
+			Session session = Session.getDefaultInstance(props,
 					new javax.mail.Authenticator() {
 						protected PasswordAuthentication getPasswordAuthentication() {
 							return new PasswordAuthentication(login, password);
@@ -1040,26 +1047,25 @@ public class ReviewPayment extends HttpServlet {
 			// String from="webserver@invoicepayment.ca";
 			String from = "echeque@invoicepayment.ca";
 			String to = "invoicefollowup@invoicepayment.ca";
-			String to3 = "payments@invoicepayment.ca";
 			String to2 = "youssef.shatila@systembind.com";
-			String subject = "Invoice Payment No. " + invId + " Declined";
+			String subject = "Paiement de la facture nï¿½ " + invId + " refusï¿½";
 			MimeMultipart multipart = new MimeMultipart("related");
 			BodyPart messageBodyPart = new MimeBodyPart();
 
 			String message = "Attention<br>";
 			message = message + "Payment " + invId
-					+ " has been declined by the bank.<br><Br>";
-			message = message + "		Reason: " + comment + "<br><br>";
+					+ " ce paiement a ï¿½tï¿½ refusï¿½ par la banque. <br><Br>";
+			message = message + "		Motif : " + comment + "<br><br>";
 			message = message + "<u>Details</u><br>";
-			message = message + "Payer:" + name + "<br>";
+			message = message + "Payeur:" + name + "<br>";
 			message = message + "Client:" + client + "<br>";
-			message = message + "Invoice Payment No.:" + invId + "<br>";
-			message = message + "Amount:" + amount + "<br>";
+			message = message + "Paiement de la facture # :" + invId + "<br>";
+			message = message + "Montent:" + amount + "<br>";
 			message = message + "<br><br><br>";
 			message = message
 					+ "Please follow up with the payer to rectify the situation.<br><br>";
 			// message = message +
-			// "<b>IPS eCheque – Online Payment Feature</b>";
+			// "<b>IPS eCheque ï¿½ Online Payment Feature</b>";
 			// final login="businessdevelopment";
 			// final String password="devness";
 			props = new Properties();
@@ -1071,7 +1077,7 @@ public class ReviewPayment extends HttpServlet {
 					outputStream.toByteArray(), "application/pdf");
 			MimeBodyPart pdfBodyPart = new MimeBodyPart();
 			pdfBodyPart.setDataHandler(new DataHandler(dataSource));
-			pdfBodyPart.setFileName("TransactionDeclined_" + invId + ".pdf");
+			pdfBodyPart.setFileName("Transaction_" + invId + ".pdf");
 
 			// add it
 			multipart.addBodyPart(messageBodyPart);
@@ -1082,10 +1088,11 @@ public class ReviewPayment extends HttpServlet {
 			msg.setSubject(subject);
 			// msg.setText(text, "utf-8", "html");
 			// msg.setText(message,"utf-8", "html");
-			msg.setSubject(subject);
+			// msg.setSubject(subject);
 			msg.setFrom(new InternetAddress(from));
 			msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-			msg.addRecipient(Message.RecipientType.CC, new InternetAddress(to3));
+			// msg.addRecipient(Message.RecipientType.CC, new
+			// InternetAddress(to2));
 			Transport.send(msg);
 
 		} catch (Exception e) {
@@ -1110,15 +1117,15 @@ public class ReviewPayment extends HttpServlet {
 		// final String password="BUvu4rej";
 		final String login = "webserver";
 		final String password = "testing";
-		props.put("mail.smtp.auth", "false");
+		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
-		props.setProperty("mail.smtp.auth", "false");
+		props.setProperty("mail.smtp.auth", "true");
 		props.setProperty("mail.smtp.starttls.enable", "true");
 
 		// final String login = "webserver";
 		// final String password = "testing";
 		try {
-			Session session = Session.getInstance(props,
+			Session session = Session.getDefaultInstance(props,
 					new javax.mail.Authenticator() {
 						protected PasswordAuthentication getPasswordAuthentication() {
 							return new PasswordAuthentication(login, password);
@@ -1144,24 +1151,26 @@ public class ReviewPayment extends HttpServlet {
 			String to = "payments@invoicepayment.ca";
 
 			String to2 = "youssef.shatila@systembind.com";
-			String subject = "Invoice Payment No. " + invId + " Approved";
+			String subject = "Paiement de la facture #  " + invId + " approuvï¿½";
 			MimeMultipart multipart = new MimeMultipart("related");
 			BodyPart messageBodyPart = new MimeBodyPart();
 
 			String message = "Attention<br>";
-			message = message + "Payment " + invId
-					+ " has been Approved by the bank.<br><Br>";
+			message = message
+					+ "Paiement  "
+					+ invId
+					+ " remis par chï¿½que ï¿½lectronique IPS a ï¿½tï¿½ approuvï¿½ par la banque.<br><Br>";
 			// message = message + "		Reason: " + comment +"<br><br>";
 			message = message + "<u>Details</u><br>";
-			message = message + "Payer:" + name + "<br>";
+			message = message + "Payeur:" + name + "<br>";
 			message = message + "Client:" + client + "<br>";
-			message = message + "Invoice Payment No.:" + invId + "<br>";
-			message = message + "Amount:" + amount + "<br>";
+			message = message + "Paiement de la facture # :" + invId + "<br>";
+			message = message + "Motent :" + amount + "<br>";
 			message = message + "<br><br><br>";
 			// message = message +
 			// "Please follow up with the payer to rectify the situation.<br><br>";
 			// message = message +
-			// "<b>IPS eCheque – Online Payment Feature</b>";
+			// "<b>IPS eCheque ï¿½ Online Payment Feature</b>";
 			// final login="businessdevelopment";
 			// final String password="devness";
 			props = new Properties();
@@ -1173,7 +1182,7 @@ public class ReviewPayment extends HttpServlet {
 					outputStream.toByteArray(), "application/pdf");
 			MimeBodyPart pdfBodyPart = new MimeBodyPart();
 			pdfBodyPart.setDataHandler(new DataHandler(dataSource));
-			pdfBodyPart.setFileName("TransactionApproved_" + invId + ".pdf");
+			pdfBodyPart.setFileName("Transaction_" + invId + ".pdf");
 
 			// pdfBodyPart.setFileName("TransactionDeclined_" +invId + ".pdf");
 
@@ -1199,7 +1208,7 @@ public class ReviewPayment extends HttpServlet {
 
 	}
 
-	public void SendEmail(String invId, String acctId, Connection con) {
+	public void SendEmail(String invId, String acctId, Connection con, Map<String,Client> clients) {
 
 		Document document = new Document();
 		try {
@@ -1220,7 +1229,11 @@ public class ReviewPayment extends HttpServlet {
 
 			ResultSet rs = null;
 			java.sql.PreparedStatement ps = null;
-			ps = con.prepareStatement("SELECT d.Name1 , d.Name2,d.DebtorId,i.InvoiceAmount,i.SysId from Factor.dbo.Debtor d join PayersAccounts pa on pa.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
+			
+			Map<String, Debtor> debtors = FactorDBService.getInstance().getDebtors();		
+			
+			// FACTOR-DEBTOR
+			ps = con.prepareStatement("SELECT pa.payerid, i.InvoiceAmount,i.SysId from PayersAccounts pa join invoicetransaction i on i.SysAcctId = pa.SysId where i.SysId="
 					+ invId);
 			rs = ps.executeQuery();
 			double invAmount = 0;
@@ -1228,11 +1241,14 @@ public class ReviewPayment extends HttpServlet {
 			String debtor = "";
 			// String invId;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+				name1 = d.getName1() + " " + d.getName2();
 				invAmount = Double.parseDouble(rs.getString("InvoiceAmount"));
-				debtor = rs.getString("DebtorId");
+				debtor = d.getDebtorId();
 
 			}
+			
 			NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
 			String amt = fmt.format(invAmount);
 
@@ -1271,7 +1287,7 @@ public class ReviewPayment extends HttpServlet {
 			cbe.beginText();
 			cbe.setFontAndSize(bf_cambria, 14);
 
-			String text = "Transaction Deleted";
+			String text = "Transaction supprimï¿½e";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -1280,17 +1296,17 @@ public class ReviewPayment extends HttpServlet {
 			cbe.setFontAndSize(bf_cambrial, 10);
 
 			// text ="Payment Date: " + invoicedate;
-			text = "Thank you for using the IPS eCheque service.";
+			text = "Nous vous remercions dï¿½avoir utilisï¿½ le service de chï¿½que ï¿½lectronique IPS.";
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
 			y_line2 = y_line2 - 20;
 			// text ="Account number: " + accountnum;
-			text = "Please print this page for your records";
+			text = "Veuillez imprimer cette page pour vos dossiers.";
 			cbe.setFontAndSize(bf_cambrial, 9);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Payer: ";
+			text = "Payeur: ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -1299,7 +1315,7 @@ public class ReviewPayment extends HttpServlet {
 					0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Deleted Amount: ";
+			text = "Montant supprimï¿½ : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -1308,11 +1324,11 @@ public class ReviewPayment extends HttpServlet {
 					0);
 
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Deleted Payment Number: ";
+			text = "Numï¿½ro du paiement supprimï¿½ : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
-			text = invId;
+			text = "         " + invId;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 190, y_line2,
 					0);
 
@@ -1321,7 +1337,7 @@ public class ReviewPayment extends HttpServlet {
 			// Calendar c = new Calendar().getInstance();
 			String timeStamp = sTimeStamp.format(new Date());
 			cbe.setFontAndSize(bf_cambria, 10);
-			text = "Date and Time: ";
+			text = "Date et heure : ";
 			y_line2 = y_line2 - 20;
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
 			cbe.setFontAndSize(bf_cambrial, 10);
@@ -1337,7 +1353,7 @@ public class ReviewPayment extends HttpServlet {
 
 			cbe.setFontAndSize(bf_cambria, 12);
 
-			text = "Deleted Invoice Payments";
+			text = "Paiements de facture supprimï¿½s:";
 			// cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center",
 			// 250, y_line1, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60, y_line2, 0);
@@ -1350,17 +1366,17 @@ public class ReviewPayment extends HttpServlet {
 
 			PdfPCell c;
 			// cb.setFontAndSize(bf_cambria, 8);
-			c = new PdfPCell(new Paragraph("Supplier", cambria9));
+			c = new PdfPCell(new Paragraph("Fournisseur", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			// c.setBorderColor(new Color(255, 0, 0));
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Invoice No.", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de facture", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("PO No.", cambria9));
+			c = new PdfPCell(new Paragraph("Nï¿½ de bon de commande", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			table.addCell(c);
-			c = new PdfPCell(new Paragraph("Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -1371,7 +1387,7 @@ public class ReviewPayment extends HttpServlet {
 			 * c.setBorder(Rectangle.NO_BORDER); table.addCell(c);
 			 */
 
-			c = new PdfPCell(new Paragraph("Payment Amount", cambria9));
+			c = new PdfPCell(new Paragraph("Montant du paiement", cambria9));
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -1379,33 +1395,30 @@ public class ReviewPayment extends HttpServlet {
 
 			// String sql =
 			// "SELECT pa.*,Client.name1 FROM invoicepayment pa Left join Client  on Client.sysid = pa.payee where pa.InvoiceTransactionId="+id;
-			CallableStatement cs = con.prepareCall("exec ipclient ?");
+			CallableStatement cs = con.prepareCall("exec ipclient_m ?");
 			// cs = connection.prepareStatement(sql);
 			cs.setString(1, String.valueOf(invId));
 			rs = cs.executeQuery();
 			// loop=0;
 			int counter = 0;
 			while (rs.next()) {
-				// table.addCell(String.valueOf(id));
-				// table.addCell("Amount");
-
-				// c = new PdfPCell(new
-				// Paragraph(rs.getString("SysId"),cambrial9));
-				// c.setBorder(Rectangle.NO_BORDER);
-				// table.addCell(c);
-
-				// name="clientid" + counter;
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payeeextra");
-				// name = rs.getString("payee");
-
+				String payee = rs.getString("payeextra");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+		
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
-
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 
@@ -1463,12 +1476,13 @@ public class ReviewPayment extends HttpServlet {
 			document.close();
 			// String from="webserver@invoicepayment.ca";
 			String from = "echeque@invoicepayment.ca";
+			String to = "payments@invoicepayment.ca"; // just added by Maubarak
 			// String to="Youssef.shatila@systembind.com";
 			DataSource dataSource = new javax.mail.util.ByteArrayDataSource(
 					outputStream.toByteArray(), "application/pdf");
 			MimeBodyPart pdfBodyPart = new MimeBodyPart();
 			pdfBodyPart.setDataHandler(new DataHandler(dataSource));
-			pdfBodyPart.setFileName("TransactionDeleted_" + invId + ".pdf");
+			pdfBodyPart.setFileName("Transaction_" + invId + ".pdf");
 
 			MimeBodyPart textBodyPart = new MimeBodyPart();
 			String content = "Please note that "
@@ -1478,8 +1492,10 @@ public class ReviewPayment extends HttpServlet {
 			;
 			String sender = from; // replace this with a valid sender email
 									// address
+			String recipient = to; // just added by Mubarak
+
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment deleted – " + name1; // this will
+			String subject = "eCheque payment deleted ï¿½ " + name1; // this will
 																	// be the
 																	// subject
 																	// of the
@@ -1504,7 +1520,7 @@ public class ReviewPayment extends HttpServlet {
 
 			props.setProperty("mail.host", "mail.ips-corporation.net");
 			props.setProperty("mail.smtp.port", "25");
-			props.setProperty("mail.smtp.auth", "false");
+			props.setProperty("mail.smtp.auth", "true");
 			props.setProperty("mail.smtp.starttls.enable", "true");
 			// final String login="echeque";
 			// final String password="BUvu4rej";
@@ -1514,7 +1530,7 @@ public class ReviewPayment extends HttpServlet {
 			// final String password="P@ssword12";
 			// final String login = "webserver";
 			// final String password = "testing";
-			Session session = Session.getInstance(props,
+			Session session = Session.getDefaultInstance(props,
 					new javax.mail.Authenticator() {
 						protected PasswordAuthentication getPasswordAuthentication() {
 							return new PasswordAuthentication(login, password);

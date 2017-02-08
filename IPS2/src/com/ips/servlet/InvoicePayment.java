@@ -1,10 +1,10 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,6 +25,12 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Document;
@@ -37,8 +43,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
-import java.util.Locale;
-import java.util.Properties;
+
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
@@ -92,19 +97,14 @@ public class InvoicePayment extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		
+		Connection connection = null;
 		try {
-			String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
-			Connection connection = null;
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
+			
+			connection = SqlServerDBService.getInstance().openConnection();
+			
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
 			String accountid = request.getParameter("account");
 			String totalpayment = request.getParameter("totalPayment");
 			totalpayment = totalpayment.substring(1);
@@ -298,11 +298,11 @@ public class InvoicePayment extends HttpServlet {
 				PreparedStatement ps = null;
 				// String sql =
 				// "SELECT d.Name1 , d.Name2, d.DebtorId,i.InvoiceDate,i.InvoiceAmount,a.AccountNumber,a.CurrencyType FROM Debtor d join PayersAccounts a on a.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = a.SysId where i.SysId="+id;
-				CallableStatement cs = connection
-						.prepareCall("{call citdebtor(?)}");
-				cs.setInt(1, id);
-				// ps = connection.prepareStatement(sql);
-				rs = cs.executeQuery();
+		//		CallableStatement cs = connection
+		//				.prepareCall("{call citdebtor(?)}");
+		//		cs.setInt(1, id);
+		//		// ps = connection.prepareStatement(sql);
+		//		rs = cs.executeQuery();
 				PreparedStatement ps3 = connection
 						.prepareStatement("SELECT payerid FROM PayersAccounts  p inner join invoicetransaction t on p.sysid = t.sysacctid where t.sysid = "
 								+ id);
@@ -310,8 +310,8 @@ public class InvoicePayment extends HttpServlet {
 				while (rs.next()) {
 					payerid = rs.getString("payerid");
 				}
-				SavePDF(id,connectionURL);
-				SendEmail(String.valueOf(id),totalpayment,connectionURL);
+				SavePDF(id, clients, debtors);
+				SendEmail(String.valueOf(id),totalpayment, debtors);
 				javax.servlet.ServletContext context = null;
 				context = sc;
 				// String path =context.getInitParameter("IPS2Path").toString();
@@ -325,27 +325,33 @@ public class InvoicePayment extends HttpServlet {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
-public void SendEmail(String id,String totalPaymentOriginal, String connectionURL){
+public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> debtors){
+	Connection connection = null;
 	try{
 		String from = "webserver@invoicepayment.ca";
 		String to2 = "Youssef.shatila@systembind.com";
-		Connection connection = null;
-		Class.forName("net.sourceforge.jtds.jdbc.Driver");
-		connection = (Connection) DriverManager.getConnection(
-							connectionURL, "sa", "894xwhtm054ocwso");
-		CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+		
+		connection = SqlServerDBService.getInstance().openConnection();
+		
+		CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 		cs.setInt(1, Integer.parseInt(id));
 		ResultSet rs = cs.executeQuery();
 		String totalpaymentoriginal = null;
 		String nameWithDebtor ="";
 		while (rs.next()) {
-			//name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+			String payerid = rs.getString("payerid");
+			Debtor d = debtors.get(payerid);
+		
 			totalpaymentoriginal = rs.getString("InvoiceAmount");
-			nameWithDebtor = "Payer: " + rs.getString("Name1") + " "
-				+ rs.getString("Name2") + " / ("
-				+ rs.getString("DebtorId").trim() + ")";
+			if (d!=null) {
+				nameWithDebtor = "Payer: " + d.getName1() + " "
+						+ d.getName2() + " / ("
+						+ d.getDebtorId().trim() + ")";
+			}
 		}
 		MimeBodyPart textBodyPart = new MimeBodyPart();
 		String content = "Please note that " + nameWithDebtor 
@@ -354,7 +360,7 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 				+ " through the IPS eCheque.<br>";
 		content = content + "<a href=http://localhost:8080/IPS2/Invoices/Invoice_" + id + ".pdf>" + "Invoice_" + id + ".pdf</a>";
 	    String sender = from;
-	    String subject = "eCheque payment submitted – " + nameWithDebtor;  ////////////////
+	    String subject = "eCheque payment submitted ï¿½ " + nameWithDebtor;  ////////////////
 	    textBodyPart.setText(content);
 	    InternetAddress iaSender = new InternetAddress(sender);
 	    InternetAddress iaRecipient = new InternetAddress(adminEmail);
@@ -385,29 +391,17 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 	    // mimeMessage.setRecipients(Message.RecipientType.CC,InternetAddress.parse("ali@invoicepayment.ca"));
 	    mimeMessage.setContent(content,"text/html");
 	    Transport.send(mimeMessage);
+	} catch(Exception e) {
+		e.printStackTrace();
+	} finally {
+		SqlServerDBService.getInstance().releaseConnection(connection);
 	}
-	catch(Exception e){
-	}	
 }
-	public void SavePDF(int transId,String connectionURL) {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		// String connectionURL =
-		// "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
-		//String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
+	public void SavePDF(int transId, Map<String,Client> clients, Map<String,Debtor> debtors) {
+	
 		Connection connection = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
-			// response.setContentType("application/pdf"); // Code 1
+			connection = SqlServerDBService.getInstance().openConnection();
 			
 			Document document = new Document();
 			String id = transId + "";
@@ -473,16 +467,21 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 			String totalpaymentoriginal = null;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+			
+				
 				totalpaymentoriginal = rs.getString("InvoiceAmount");
-				text = "Payer: " + rs.getString("Name1") + " "
-						+ rs.getString("Name2") + " / ("
-						+ rs.getString("DebtorId").trim() + ")";
+				if (d!=null) {
+					text = "Payer: " + d.getName1() + " "
+							+ d.getName2() + " / ("
+							+ d.getDebtorId().trim() + ")";
+				}
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -579,18 +578,26 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 			table.addCell(c);
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			while (rs.next()) {
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+		
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 				c = new PdfPCell(new Paragraph(rs.getString("PoNumber"),
@@ -649,7 +656,7 @@ public void SendEmail(String id,String totalPaymentOriginal, String connectionUR
 			 * " has submitted a payment in the amount of " +
 			 * totalpaymentoriginal +
 			 * " through the IPS eCheque. Details are attached."; String sender
-			 * = from; String subject = "eCheque payment submitted – " + name1 ;
+			 * = from; String subject = "eCheque payment submitted ï¿½ " + name1 ;
 			 * //this will be the subject of the email
 			 * textBodyPart.setText(content); InternetAddress iaSender = new
 			 * InternetAddress(sender); InternetAddress iaRecipient = new

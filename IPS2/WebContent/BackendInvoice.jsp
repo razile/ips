@@ -13,6 +13,8 @@
 <%@ page import="java.util.Locale"%>
 <%@ page buffer="16kb"%>
 <%@ page import="javax.servlet.*"%>
+
+
 <html>
 <head>
  <link rel="stylesheet" href="payer.css" type="text/css"/>
@@ -58,7 +60,7 @@ String userid = (String)request.getParameter("pyid");
         response.sendRedirect("http://live.invoicepayment.ca/ipspayers/index.htm");
         }
 %>
-<%@ include file="connection.jsp" %>
+
 <%@include file='header.jsp'%>
 	<%@include file='sidebar.jsp'%>
 	<form method="post" action="SearchInvoices">
@@ -79,8 +81,7 @@ int payerid=Integer.parseInt(request.getParameter("pyid").toString());
 <% 
 try
 {
-	Class.forName(driverName);
-	con = DriverManager.getConnection(url,user,psw);
+	con = SqlServerDBService.getInstance().openConnection();
 	String sql = "SELECT t.SysId,pa.payerid,InvoiceDate,t.status FROM invoicetransaction  t inner join PayersAccounts pa on t.SysAcctId = pa.SysId where  t.status ='Pending' or t.status ='Submitted'  order by t.SysId desc;";
 	PreparedStatement ps2  = con.prepareStatement(sql);
 	//ps2.setInt(1, payerid);
@@ -96,6 +97,8 @@ try
 	}
 	catch(Exception e){
 			e.printStackTrace();
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(con);
 		}
 	
 	%>

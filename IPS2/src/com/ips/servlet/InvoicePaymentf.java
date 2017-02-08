@@ -1,10 +1,10 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.awt.Color;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.SQLException;
 
 import java.sql.Connection;
@@ -34,6 +34,8 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
+import com.ips.database.DBProperties;
+import com.ips.database.SqlServerDBService;
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Document;
@@ -46,8 +48,6 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
-
-import java.util.Properties;
 
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Authenticator;
@@ -107,9 +107,6 @@ public class InvoicePaymentf extends HttpServlet {
 		int level = 0;
 		String acctid = "";
 		String payerid = "";
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
 		Connection connection = null;
 		try {
 
@@ -117,17 +114,9 @@ public class InvoicePaymentf extends HttpServlet {
 			String transId = request.getParameter("transId");
 			int id = 0;
 			int counter = 0;
-			// Class.forName("com.mysql.jdbc.Driver");
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
+			
+			connection = SqlServerDBService.getInstance().openConnection();
+			
 			acctid = request.getParameter("AcctId");
 			String invNo = request.getParameter("invoiceNumber");
 			String payee = request.getParameter("payee");
@@ -301,11 +290,11 @@ public class InvoicePaymentf extends HttpServlet {
 			PreparedStatement ps = null;
 			// String sql =
 			// "SELECT d.Name1 , d.Name2, d.DebtorId,i.InvoiceDate,i.InvoiceAmount,a.AccountNumber,a.CurrencyType FROM Debtor d join PayersAccounts a on a.PayerId = d.SysId join invoicetransaction i on i.SysAcctId = a.SysId where i.SysId="+id;
-			CallableStatement cs = connection
-					.prepareCall("{call citdebtor(?)}");
-			cs.setInt(1, id);
+			//CallableStatement cs = connection
+			//		.prepareCall("{call citdebtor(?)}");
+			//cs.setInt(1, id);
 			// ps = connection.prepareStatement(sql);
-			rs = cs.executeQuery();
+			//rs = cs.executeQuery();
 			PreparedStatement ps3 = connection
 					.prepareStatement("SELECT payerid FROM PayersAccounts  p inner join invoicetransaction t on p.sysid = t.sysacctid where t.sysid = "
 							+ id);
@@ -337,6 +326,8 @@ public class InvoicePaymentf extends HttpServlet {
 			// e.printStackTrace(new PrintWriter(errors));
 			// pw2.println(errors.toString());
 			// e.printStackTrace();
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 }

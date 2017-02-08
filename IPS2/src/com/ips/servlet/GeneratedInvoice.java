@@ -1,4 +1,4 @@
-package ProcessAcctData;
+package com.ips.servlet;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.Color;
 import java.sql.CallableStatement;
-import java.sql.DriverManager;
+
 import java.sql.Connection;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletOutputStream;
@@ -19,12 +19,18 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfWriter;
+import com.ips.database.DBProperties;
+import com.ips.database.FactorDBService;
+import com.ips.database.SqlServerDBService;
+import com.ips.model.Client;
+import com.ips.model.Debtor;
+import com.ips.model.Invoice;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
-import java.util.Properties;
+
 import javax.mail.PasswordAuthentication;
 import javax.mail.Message;
 import javax.mail.Session;
@@ -70,23 +76,15 @@ public class GeneratedInvoice extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// String connectionURL = "jdbc:mysql://localhost:3306/ipspayment";//
-		// newData is the database
-		// String connectionURL =
-		// "jdbc:jtds:sqlserver://192.168.1.41/ipspayment";
-		String connectionURL = "jdbc:jtds:sqlserver://192.168.1.41/ipspayment_test";
+	
 		Connection connection = null;
 		try {
-			Class.forName("net.sourceforge.jtds.jdbc.Driver");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "appdev", "8Ecrespe");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root",
-			// "dbaDEV2013-");
-			// connection = (Connection)
-			// DriverManager.getConnection(connectionURL, "root", "password");
-			connection = (Connection) DriverManager.getConnection(
-					connectionURL, "sa", "894xwhtm054ocwso");
+			
+			connection = SqlServerDBService.getInstance().openConnection();
+			
+			Map<String,Client> clients = FactorDBService.getInstance().getClients();
+			Map<String,Debtor> debtors = FactorDBService.getInstance().getDebtors();
+			
 			response.setContentType("application/pdf"); // Code 1
 			Document document = new Document();
 			String id = request.getParameter("hiddenId");
@@ -150,16 +148,21 @@ public class GeneratedInvoice extends HttpServlet {
 			String name1 = "";
 			ResultSet rs = null;
 			PreparedStatement ps = null;
-			CallableStatement cs = connection.prepareCall("exec citdebtor ?");
+			CallableStatement cs = connection.prepareCall("exec citdebtor_m ?");
 			cs.setInt(1, Integer.parseInt(id));
 			rs = cs.executeQuery();
 			String totalpaymentoriginal = null;
 			while (rs.next()) {
-				name1 = rs.getString("Name1") + " " + rs.getString("Name2");
+				String payerid = rs.getString("payerid");
+				Debtor d = debtors.get(payerid);
+			
+				
 				totalpaymentoriginal = rs.getString("InvoiceAmount");
-				text = "Payer: " + rs.getString("Name1") + " "
-						+ rs.getString("Name2") + " / ("
-						+ rs.getString("DebtorId").trim() + ")";
+				if (d!=null) {
+					text = "Payer: " + d.getName1() + " "
+							+ d.getName2() + " / ("
+							+ d.getDebtorId().trim() + ")";
+				}
 				cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
 						y_line2, 0);
 				cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 60,
@@ -256,18 +259,28 @@ public class GeneratedInvoice extends HttpServlet {
 			c.setBorder(Rectangle.NO_BORDER);
 			c.setHorizontalAlignment(Element.ALIGN_RIGHT);
 			table.addCell(c);
-			cs = connection.prepareCall("exec ipclient ?");
+			cs = connection.prepareCall("exec ipclient_m ?");
 			cs.setString(1, String.valueOf(id));
 			rs = cs.executeQuery();
 			while (rs.next()) {
-				String name = rs.getString("name1");
-				if (name == null)
-					name = rs.getString("payee");
+
+				String payee = rs.getString("payee");
+				String invoicenumber = rs.getString("invoicenumber");
+				Client cl = clients.get(payee);
+				Invoice inv = FactorDBService.getInstance().getInvoice(invoicenumber);
+				
+				String name = null;
+				if (cl == null || cl.getName1() == null) {
+					name = payee;
+				} else {
+					name = cl.getName1();
+				}
+		
 				c = new PdfPCell(new Paragraph(name, cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 				c = new PdfPCell(
-						new Paragraph(rs.getString("InvId"), cambrial9));
+						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 				c = new PdfPCell(new Paragraph(rs.getString("PoNumber"),
@@ -324,7 +337,7 @@ public class GeneratedInvoice extends HttpServlet {
 					+ totalpaymentoriginal
 					+ " through the IPS eCheque. Details are attached.";
 			String sender = from;
-			String subject = "eCheque payment submitted – " + name1; // this
+			String subject = "eCheque payment submitted ï¿½ " + name1; // this
 																		// will
 																		// be
 																		// the
@@ -380,6 +393,8 @@ public class GeneratedInvoice extends HttpServlet {
 			// StringWriter errors = new StringWriter();
 			// e.printStackTrace(new PrintWriter(errors));
 			// pw2.println(errors.toString());
+		} finally {
+			SqlServerDBService.getInstance().releaseConnection(connection);
 		}
 	}
 }
