@@ -519,7 +519,8 @@ ResultSet rs =null;
 PreparedStatement ps = null;
 //int  payerid=Integer.parseInt(session.getAttribute("pyid").toString());
 int  payerid=Integer.parseInt(userid);
-
+String email1="";
+String email2="";
 try
 {
 	
@@ -543,8 +544,7 @@ while (rs.next()) {
 
 <% 
 }
-	String email1="";
-	String email2="";
+
 	String spayerid = Integer.toString(payerid);
 	Debtor dcont = FactorDBService.getInstance().getEmails(spayerid);
 	email1 = dcont.getContactEmail();
