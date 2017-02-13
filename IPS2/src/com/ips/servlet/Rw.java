@@ -831,9 +831,9 @@ public class Rw extends HttpServlet {
 					});
 			// String from="webserver@invoicepayment.ca";
 			String from = "echeque@invoicepayment.ca";
-			String to = email;
-			// String to="invoicefollowup@invoicepayment.ca";
-			// String to="youssef.shatila@systembind.com";
+			//String to = email;
+			//String to="invoicefollowup@invoicepayment.ca";
+			String to="rrasile@hotmail.com";
 			String subject = "Invoice Payment No. " + invId + " Declined";
 
 			MimeMultipart multipart = new MimeMultipart("related");
@@ -926,9 +926,9 @@ public class Rw extends HttpServlet {
 					});
 			String from = "echeque@invoicepayment.ca";
 			// String from="webserver@invoicepayment.ca";
-			String to = email;
+			//String to = email;
 			// String to="invoicefollowup@invoicepayment.ca";
-			// String to="youssef.shatila@systembind.com";
+			String to="rrasile@hotmail.com";
 			String subject = "Invoice Payment No. " + invId + " Approved";
 
 			MimeMultipart multipart = new MimeMultipart("related");
@@ -1482,7 +1482,7 @@ public class Rw extends HttpServlet {
 			String sender = from; // replace this with a valid sender email
 									// address
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment deleted � " + name1; // this will
+			String subject = "eCheque payment deleted - " + name1; // this will
 																	// be the
 																	// subject
 																	// of the

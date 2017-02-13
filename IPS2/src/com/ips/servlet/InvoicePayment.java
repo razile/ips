@@ -360,7 +360,7 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 				+ " through the IPS eCheque.<br>";
 		content = content + "<a href=http://localhost:8080/IPS2/Invoices/Invoice_" + id + ".pdf>" + "Invoice_" + id + ".pdf</a>";
 	    String sender = from;
-	    String subject = "eCheque payment submitted � " + nameWithDebtor;  ////////////////
+	    String subject = "eCheque payment submitted - " + nameWithDebtor;  ////////////////
 	    textBodyPart.setText(content);
 	    InternetAddress iaSender = new InternetAddress(sender);
 	    InternetAddress iaRecipient = new InternetAddress(adminEmail);
@@ -531,7 +531,7 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
-			text = "calling us at 1-888-503-4528 ext. 237 no later than 4:30pm EDT/EST, or by ";
+			text = "calling us at 1-888-503-4528 ext. 227 no later than 4:30pm EDT/EST, or by ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);

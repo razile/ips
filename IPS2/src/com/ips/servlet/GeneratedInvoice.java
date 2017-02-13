@@ -212,7 +212,7 @@ public class GeneratedInvoice extends HttpServlet {
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
-			text = "calling us at 1-888-503-4528 ext. 237 no later than 4:30pm EDT/EST, or by ";
+			text = "calling us at 1-888-503-4528 ext. 227 no later than 4:30pm EDT/EST, or by ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
@@ -337,7 +337,7 @@ public class GeneratedInvoice extends HttpServlet {
 					+ totalpaymentoriginal
 					+ " through the IPS eCheque. Details are attached.";
 			String sender = from;
-			String subject = "eCheque payment submitted � " + name1; // this
+			String subject = "eCheque payment submitted - " + name1; // this
 																		// will
 																		// be
 																		// the

@@ -353,7 +353,7 @@ public class InvoicePaymentProd extends HttpServlet {
 				+ " through the IPS eCheque. Details are attached.<br>";
 		content = content + "<a href=http://localhost:8080/IPS2/Invoices/Invoice_" + id + ".pdf>" + "Invoice_" + id + ".pdf</a>";
 	    String sender = from;
-	    String subject = "eCheque payment submitted � " + nameWithDebtor;  ////////////////
+	    String subject = "eCheque payment submitted - " + nameWithDebtor;  ////////////////
 	    InternetAddress iaSender = new InternetAddress(sender);
 	    InternetAddress iaRecipient = new InternetAddress(adminEmail);
 	   // MimeMultipart mimeMultipart = new MimeMultipart();
@@ -522,7 +522,7 @@ public class InvoicePaymentProd extends HttpServlet {
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
-			text = "calling us at 1-888-503-4528 ext. 237 no later than 4:30pm EDT/EST, or by ";
+			text = "calling us at 1-888-503-4528 ext. 227 no later than 4:30pm EDT/EST, or by ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);

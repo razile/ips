@@ -833,9 +833,9 @@ public class ReviewPayment extends HttpServlet {
 			});
 			// String from="webserver@invoicepayment.ca";
 			String from = "echeque@invoicepayment.ca";
-			String to = email;
+			//String to = email;
 			// String to="invoicefollowup@invoicepayment.ca";
-			// String to="youssef.shatila@systembind.com";
+			String to="rrasile@hotmail.com";
 			String subject = "Invoice Payment No. " + invId + " Declined";
 
 			MimeMultipart multipart = new MimeMultipart("related");
@@ -927,9 +927,9 @@ public class ReviewPayment extends HttpServlet {
 			});
 			String from = "echeque@invoicepayment.ca";
 			// String from="webserver@invoicepayment.ca";
-			String to = email;
+			//String to = email;
 			// String to="invoicefollowup@invoicepayment.ca";
-			// String to="youssef.shatila@systembind.com";
+			String to="rrasile@hotmail.com";
 			String subject = "Invoice Payment No. " + invId + " Approved";
 
 			MimeMultipart multipart = new MimeMultipart("related");
@@ -977,7 +977,7 @@ public class ReviewPayment extends HttpServlet {
 			// DataSource fds = new
 			// FileDataSource("/usr/local/tomcat/webapps/payer/images/IPSLogo.jpg");
 			DataSource fds = new FileDataSource(
-					"C:\\Tomcat 6.0\\webapps\\ROOT\\images\\IPSLogo.jpg");
+					"C:\\Program Files\\Tomcat 7.0\\webapps\\ROOT\\images\\IPSLogo.jpg");
 			// DataSource fds = new
 			// FileDataSource("C:\\plato\\jag\\work\\workspace\\IPS2\\WebContent\\images\\IPSLogo.jpg");
 			messageBodyPart.setDataHandler(new DataHandler(fds));
@@ -1485,7 +1485,7 @@ public class ReviewPayment extends HttpServlet {
 			String sender = from; // replace this with a valid sender email
 									// address
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment deleted � " + name1; // this will
+			String subject = "eCheque payment deleted - " + name1; // this will
 																	// be the
 																	// subject
 																	// of the

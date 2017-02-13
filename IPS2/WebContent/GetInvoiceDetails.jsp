@@ -56,7 +56,7 @@ while(rs.next()){
 %>
  
                         <tr>
-                         <td style="text-align:center"><h3 style="text-align:center"><%=rs.getString("InvoiceNumber") %></h3></td>
+                         <td style="text-align:center"><h3 style="text-align:center"><%=rs.getString("InvId") %></h3></td>
                          <td><h3><%=(name1==null)?rs.getString("Payeeextra"):name1%></h3></td>
                          <td class="rightJustified"><h3 style="text-align:right"><%=amt %></h3></td>
                          <td class="rightJustified"><h3 style="text-align:right"><%=pamt %></h3></td>

@@ -981,7 +981,7 @@ public class ReviewPaymentf extends HttpServlet {
 			// DataSource fds = new
 			// FileDataSource("/usr/local/tomcat/webapps/payer/images/IPSLogo.jpg");
 			DataSource fds = new FileDataSource(
-					"C:\\Tomcat 6.0\\webapps\\ROOT\\images\\IPSLogo.jpg");
+					"C:\\Program Files\\Tomcat 7.0\\webapps\\ROOT\\images\\IPSLogo.jpg");
 			// DataSource fds = new
 			// FileDataSource("C:\\plato\\jag\\work\\workspace\\IPS2\\WebContent\\images\\IPSLogo.jpg");
 			messageBodyPart.setDataHandler(new DataHandler(fds));
@@ -1495,7 +1495,7 @@ public class ReviewPaymentf extends HttpServlet {
 			String recipient = to; // just added by Mubarak
 
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment deleted � " + name1; // this will
+			String subject = "eCheque payment deleted -" + name1; // this will
 																	// be the
 																	// subject
 																	// of the

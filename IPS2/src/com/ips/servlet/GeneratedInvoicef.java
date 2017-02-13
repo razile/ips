@@ -265,7 +265,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 
-			text = "composant le 1-888-503-4528,poste 237 avant 16:30 HAE/HNE,ou en soumettant une ";
+			text = "composant le 1-888-503-4528,poste 227 avant 16:30 HAE/HNE,ou en soumettant une ";
 			y_line2 = y_line2 - 20;
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
 			cbe.showTextAligned(PdfContentByte.ALIGN_LEFT, text, 70, y_line2, 0);
@@ -451,7 +451,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			String sender = from; // replace this with a valid sender email
 									// address
 			// String recipient = to; //replace this with
-			String subject = "eCheque payment submitted � " + name1; // this
+			String subject = "eCheque payment submitted - " + name1; // this
 																		// will
 																		// be
 																		// the
@@ -526,7 +526,7 @@ public class GeneratedInvoicef extends HttpServlet {
 			 * text = "Note:" + ""; message = message + text +"<br>"; text =
 			 * "If you need to have this payment modified or deleted, you must advise us by "
 			 * ; message = message + text +"<br>"; text =
-			 * "calling us at 1-888-503-4528 ext. 237 no later than 4:30pm EDT/EST, or by "
+			 * "calling us at 1-888-503-4528 ext. 227 no later than 4:30pm EDT/EST, or by "
 			 * ; message = message + text +"<br>"; text =
 			 * "making an online request by 6:00 pm your local time on the same day you "
 			 * ; message = message + text +"<br>"; text =
