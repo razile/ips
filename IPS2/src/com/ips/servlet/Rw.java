@@ -832,8 +832,8 @@ public class Rw extends HttpServlet {
 			// String from="webserver@invoicepayment.ca";
 			String from = "echeque@invoicepayment.ca";
 			//String to = email;
-			//String to="invoicefollowup@invoicepayment.ca";
-			String to="rrasile@hotmail.com";
+			String to="invoicefollowup@invoicepayment.ca";
+			//String to="rrasile@hotmail.com";
 			String subject = "Invoice Payment No. " + invId + " Declined";
 
 			MimeMultipart multipart = new MimeMultipart("related");
@@ -927,8 +927,8 @@ public class Rw extends HttpServlet {
 			String from = "echeque@invoicepayment.ca";
 			// String from="webserver@invoicepayment.ca";
 			//String to = email;
-			// String to="invoicefollowup@invoicepayment.ca";
-			String to="rrasile@hotmail.com";
+			String to="invoicefollowup@invoicepayment.ca";
+			//String to="rrasile@hotmail.com";
 			String subject = "Invoice Payment No. " + invId + " Approved";
 
 			MimeMultipart multipart = new MimeMultipart("related");
