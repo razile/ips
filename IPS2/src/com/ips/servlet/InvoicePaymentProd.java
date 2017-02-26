@@ -351,7 +351,7 @@ public class InvoicePaymentProd extends HttpServlet {
 				+ " has submitted a payment in the amount of "
 				+ totalPaymentOriginal
 				+ " through the IPS eCheque. Details are attached.<br>";
-		content = content + "<a href=http://localhost:8080/IPS2/Invoices/Invoice_" + id + ".pdf>" + "Invoice_" + id + ".pdf</a>";
+		content = content + "<a href=https://live.invoicepayment.ca:8443/ipspayersLive/IPS2/Invoices/Invoice_" + id + ".pdf>" + "Invoice_" + id + ".pdf</a>";
 	    String sender = from;
 	    String subject = "eCheque payment submitted - " + nameWithDebtor;  ////////////////
 	    InternetAddress iaSender = new InternetAddress(sender);
