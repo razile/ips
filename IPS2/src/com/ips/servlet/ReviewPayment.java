@@ -324,15 +324,15 @@ public class ReviewPayment extends HttpServlet {
 					"Cp1252", false);
 			BaseFont bf_cambriaz = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambria = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambrial = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/Cambria.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/Cambria.ttf",
 							BaseFont.WINANSI, false);
 
 			Font cambria9 = new Font(bf_cambria, 9);
@@ -568,15 +568,15 @@ public class ReviewPayment extends HttpServlet {
 					"Cp1252", false);
 			BaseFont bf_cambriaz = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambria = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambrial = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/Cambria.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/Cambria.ttf",
 							BaseFont.WINANSI, false);
 
 			Font cambria9 = new Font(bf_cambria, 9);
@@ -977,7 +977,7 @@ public class ReviewPayment extends HttpServlet {
 			// DataSource fds = new
 			// FileDataSource("/usr/local/tomcat/webapps/payer/images/IPSLogo.jpg");
 			DataSource fds = new FileDataSource(
-					"C:\\Program Files\\Tomcat 7.0\\webapps\\ROOT\\images\\IPSLogo.jpg");
+					"C:\\Tomcat 6.0\\webapps\\ROOT\\images\\IPSLogo.jpg");
 			// DataSource fds = new
 			// FileDataSource("C:\\plato\\jag\\work\\workspace\\IPS2\\WebContent\\images\\IPSLogo.jpg");
 			messageBodyPart.setDataHandler(new DataHandler(fds));
@@ -1210,15 +1210,15 @@ public class ReviewPayment extends HttpServlet {
 					"Cp1252", false);
 			BaseFont bf_cambriaz = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambria = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambrial = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/Cambria.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/Cambria.ttf",
 							BaseFont.WINANSI, false);
 
 			ResultSet rs = null;

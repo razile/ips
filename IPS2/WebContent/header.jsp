@@ -77,16 +77,16 @@ try{
 	<a href="http://invoicepayment.ca/en/contact_ips_invoice_payment_systems.php" style="color:#FFFFFF" target="_blank"> <font face="arial" size="2" color="#FFFFFF">Contact Us</font></a>
 	</td><td> 
 	<a href="http://invoicepayment.ca/en/index.php" style="color:#FFFFFF" target="_blank"> <font face="arial" size="2" color="#FFFFFF">IPS Home</font></a>
-        </td><td>  	 <a href="https://live.invoicepayment.ca:8443/ipspayers/Payer_Manual_Web.pdf#zoom=100%" style="color:#FFFFFF" target="_blank"> <font face="arial" size="2" color="#FFFFFF">Help</font></a>&nbsp;&nbsp;
-	</td><td><  <a href="https://live.invoicepayment.ca:8443/ipspayers/Logout.jsp" style="color:#FFFFFF" target="_top"> <font face="arial" size="2" color="#FFFFFF">Log Out </font></a>
+        </td><td>  	 <a href="https://live.invoicepayment.ca:8443/ipspayersLive/Payer_Manual_Web.pdf#zoom=100%" style="color:#FFFFFF" target="_blank"> <font face="arial" size="2" color="#FFFFFF">Help</font></a>&nbsp;&nbsp;
+	</td><td><  <a href="https://live.invoicepayment.ca:8443/ipspayersLive/Logout.jsp" style="color:#FFFFFF" target="_top"> <font face="arial" size="2" color="#FFFFFF">Log Out </font></a>
          </td></tr></table> 
 	</td></tr></table></div>
 
                 
-     <!--  for prod: https://live.invoicepayment.ca:8443/ipspayers/debtr.jsp   -->
+     <!--  for prod: https://live.invoicepayment.ca:8443/ipspayersLive/debtr.jsp   -->
      <!--  for test: http://test.invoicepayment.ca/payerFrLive/debtr.jsp -->
 
-	<form method=post name="MainMenuForm" action="https://live.invoicepayment.ca:8443/ipspayers/debtr.jsp"> 
+	<form method=post name="MainMenuForm" action="https://live.invoicepayment.ca:8443/ipspayersLive/debtr.jsp"> 
        <input type="hidden" name=did value=<%=dtid%> >
 	   <input type="hidden" name=dbnme value="<%=dbnm%>" >
 	   <input type="hidden" name=dpass value="<%=dpass%>" >
@@ -95,7 +95,7 @@ try{
 	 
 	  <!--  for prod: https://live.invoicepayment.ca:8443/ipspayers/feedform.jsp -->
 	 
-	 <form method=post name="feedForm" action="https://live.invoicepayment.ca:8443/ipspayers/feedform.jsp">
+	 <form method=post name="feedForm" action="https://live.invoicepayment.ca:8443/ipspayersLive/feedform.jsp">
 	    <input type="hidden" name="plog" value=<%=dtid%> >
            <input type="hidden" name="dbnm" value="<%=dbnm%>" >
            <input type="hidden" name=dpass value="<%=dpass%>" >

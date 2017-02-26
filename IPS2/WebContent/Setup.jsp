@@ -87,7 +87,7 @@ String userid = (String)request.getParameter("pyid");
 //userid = CipherData.decipher("01234567",userid);
 if (userid==null) userid = (String)request.getAttribute("pyid");
 if (userid==null) userid= (String)request.getParameter("plog");
-if (userid==null) response.sendRedirect("http://live.invoicepayment.ca/ipspayers/index.htm");
+if (userid==null) response.sendRedirect("http://live.invoicepayment.ca/ipspayersLive/index.htm");
         
 
 %>

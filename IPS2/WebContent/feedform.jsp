@@ -237,7 +237,7 @@ textarea {
 		
 		
 		<table width="600" border="0" align="center" cellspacing="0" cellpadding="0">
-		<form name="sendo" action="http://image.invoicepayment.ca/IPSmain/ipspayers/feedmailerpyr.jsp" method="post" target="_blank" onSubmit="javascript:return checkform();"> 
+		<form name="sendo" action="http://image.invoicepayment.ca/IPSmain/ipspayersLive/feedmailerpyr.jsp" method="post" target="_blank" onSubmit="javascript:return checkform();"> 
 		<tr><td colspan="4" align="center"><img src="passwd.jpg"/></td></tr>
 		<tr><td colspan="4">&nbsp;</td></tr>
 		<tr><td colspan="4" align="center"><font face="arial" size="3" color="#A0A0A0">Veuillez nous faire part de vos commentaires</font></td></tr>

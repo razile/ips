@@ -409,15 +409,15 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 					"Cp1252", false);
 			BaseFont bf_cambriaz = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambria = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambrial = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/Cambria.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/Cambria.ttf",
 							BaseFont.WINANSI, false);
 			Font cambria9 = new Font(bf_cambria, 9);
 			Font cambria12 = new Font(bf_cambria, 10);
@@ -427,7 +427,7 @@ public void SendEmail(String id,String totalPaymentOriginal, Map<String,Debtor> 
 			// ServletOutputStream os = response.getOutputStream();
 			// ByteArrayOutputStream os = new ByteArrayOutputStream();
 			// OutputStream os = new FileOutputStream("C:\\Users\\systembind\\workspace\\IPS2\\WebContent\\Invoices\\Invoice_" + id + ".pdf");
-			OutputStream os = new FileOutputStream("C:\\Program Files\\Apache Software Foundation\\Tomcat 7.0\\webapps\\ROOT\\ipspayers\\IPS2\\Invoices\\Invoice_" + id + ".pdf");
+			OutputStream os = new FileOutputStream("C:\\Tomcat 6.0\\webapps\\ROOT\\ipspayersLive\\IPS2\\Invoices\\Invoice_" + id + ".pdf");
 			PdfWriter writer = PdfWriter.getInstance(document, os);
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			PdfWriter writere = PdfWriter.getInstance(document, outputStream);

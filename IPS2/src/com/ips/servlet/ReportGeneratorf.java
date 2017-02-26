@@ -115,11 +115,11 @@ public class ReportGeneratorf extends HttpServlet {
 					"Cp1252", false);
 			BaseFont bf_cambrial = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/Cambria.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/Cambria.ttf",
 							BaseFont.WINANSI, false);
 			BaseFont bf_cambria = BaseFont
 					.createFont(
-							"http://live.invoicepayment.ca/ipspayers/IPS2/font/cambriab.ttf",
+							"http://live.invoicepayment.ca/ipspayersLive/IPS2/font/cambriab.ttf",
 							BaseFont.WINANSI, false);
 			// http://localhost:8080/IPS2/
 			Font courier = new Font(bf_courier, 9);

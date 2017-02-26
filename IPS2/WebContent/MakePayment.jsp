@@ -488,7 +488,7 @@ String userid1 = (String)request.getParameter("id"); //(String)session.getAttrib
 if (userid==null) userid = (String) request.getAttribute("pyid");
 if (userid==null) userid = userid1;
     
-       // response.sendRedirect("https://payer.secure.invoicepayment.ca:8443/ipspayers/index.htm");
+       // response.sendRedirect("https://payer.secure.invoicepayment.ca:8443/ipspayersLive/index.htm");
        
 %>
 

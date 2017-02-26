@@ -76,7 +76,7 @@
 String userid = (String)request.getParameter("pyid");
  if (userid==null)
 {
-        response.sendRedirect("http://live.invoicepayment.ca/payer_fr_modified/ipspayers/index.htm");
+        response.sendRedirect("http://live.invoicepayment.ca/payer_fr_modified/ipspayersLive/index.htm");
         }
 %>
 

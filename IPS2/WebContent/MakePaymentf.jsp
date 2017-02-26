@@ -495,7 +495,7 @@ String userid = (String)request.getParameter("pyid"); //(String)session.getAttri
                userid = (String) request.getAttribute("pyid");
                if (userid==null){
 		userid = userid1;}
-       // response.sendRedirect("http://live.invoicepayment.ca/payer_fr_modified/ipspayers/index.htm");
+       // response.sendRedirect("http://live.invoicepayment.ca/payer_fr_modified/ipspayersLive/index.htm");
        }
 %>
 

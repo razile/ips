@@ -21,7 +21,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ProcessAcct_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/ProcessAcct</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/ProcessAcct</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -31,12 +31,12 @@
 		<servlet-class>com.ips.servlet.InvoicePayment</servlet-class>
 		<init-param>
 			<param-name>email</param-name>
-			<param-value>youssef.shatila@systembind.com</param-value>
+			<param-value>payments@invoicepayment.ca</param-value>
 		</init-param>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>InvoicePayment_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/InvoicePayment</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/InvoicePayment</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -55,7 +55,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ReviewPayment_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/ReviewPayment</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/ReviewPayment</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<description></description>
@@ -65,7 +65,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>UpdateInvoice_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/UpdateInvoice</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/UpdateInvoice</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -76,7 +76,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ReportGenerator_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/ReportGenerator</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/ReportGenerator</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -87,7 +87,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ReportGeneratorf_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/ReportGeneratorf</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/ReportGeneratorf</url-pattern>
 	</servlet-mapping>
 
 
@@ -99,7 +99,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>AdminReport_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/AdminReport</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/AdminReport</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -110,7 +110,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>AdminReportf_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/AdminReportf</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/AdminReportf</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -121,7 +121,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>DeletedInvoice_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/DeletedInvoice</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/DeletedInvoice</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<description></description>
@@ -131,7 +131,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>DeletedInvoicef_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/DeletedInvoicef</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/DeletedInvoicef</url-pattern>
 	</servlet-mapping>
 	
 	<servlet>
@@ -146,7 +146,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>GeneratedInvoice_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/GeneratedInvoice</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/GeneratedInvoice</url-pattern>
 	</servlet-mapping>
 
 
@@ -162,7 +162,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>GeneratedInvoicef_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/GeneratedInvoicef</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/GeneratedInvoicef</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<description></description>
@@ -173,7 +173,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ProcessAcctf_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/ProcessAcctf</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/ProcessAcctf</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -185,7 +185,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>InvoicePaymentf_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/InvoicePaymentf</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/InvoicePaymentf</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -197,7 +197,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ReviewPaymentf_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/ReviewPaymentf</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/ReviewPaymentf</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -209,7 +209,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>UpdateInvoicef_M</servlet-name>
-		<url-pattern>/payerFrLive/IPSMIGRATE/UpdateInvoicef</url-pattern>
+		<url-pattern>/ipspayersLive/IPS2/UpdateInvoicef</url-pattern>
 	</servlet-mapping>
 	
 </web-app>

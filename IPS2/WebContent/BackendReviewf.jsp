@@ -226,7 +226,7 @@ $(document).ready(function() {
  if (userid==null)
  {   userid= (String)request.getAttribute("pyid");
      if (userid==null)        
-        response.sendRedirect("http://live.invoicepayment.ca/payer_fr_modified/ipspayers/index.htm");
+        response.sendRedirect("http://live.invoicepayment.ca/payer_fr_modified/ipspayersLive/index.htm");
         }
 %>
 <div id="dialog-modal" title="Invoice Details">
