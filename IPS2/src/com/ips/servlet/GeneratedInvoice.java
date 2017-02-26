@@ -283,8 +283,7 @@ public class GeneratedInvoice extends HttpServlet {
 						new Paragraph((inv!=null)?inv.getInvoiceId():"", cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
-				c = new PdfPCell(new Paragraph(rs.getString("PoNumber"),
-						cambrial9));
+				c = new PdfPCell(new Paragraph((inv!=null)?inv.getPoNumber():"",cambrial9));
 				c.setBorder(Rectangle.NO_BORDER);
 				table.addCell(c);
 				NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);

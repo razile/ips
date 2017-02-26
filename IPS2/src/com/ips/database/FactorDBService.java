@@ -251,7 +251,7 @@ public class FactorDBService {
 		try {
 			connection = openConnection();
 	
-			sql = "SELECT invid from Invoice where sysid = " + sysid;
+			sql = "SELECT invid, ponumber from Invoice where sysid = " + sysid;
 			Statement ps = connection.createStatement();
 			ResultSet rs = ps.executeQuery(sql);
 			
@@ -259,6 +259,7 @@ public class FactorDBService {
 				String invoiceId = rs.getString("invid");
 				i = new Invoice();
 				i.setInvoiceId(invoiceId);
+				i.setPoNumber(rs.getString("ponumber"));
 			}
 			
 			rs.close();
